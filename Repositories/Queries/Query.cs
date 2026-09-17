@@ -113,5 +113,10 @@ namespace Repositories.Queries
             public const string InsertReplaceApplication = CheckbookApplicationQ.InsertReplaceApplication;
             public const string InsertRenewApplication = CheckbookApplicationQ.InsertRenewApplication;
         }
+        public static class Checkbook
+        {
+            public const string Insert = CheckbookQ.Insert;
+            public const string getLastCheck = CheckbookQ.getLastCheck;
+        }
     }
 }
