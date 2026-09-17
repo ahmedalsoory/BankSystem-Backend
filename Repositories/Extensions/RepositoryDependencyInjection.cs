@@ -76,11 +76,14 @@ namespace Repositories.Extensions
             services.AddScoped<IOnboardingApplicationTypesReadRepository, OnboardingApplicationTypesRepository>();
             services.AddScoped<IApplicationWorkflowStepReadRepository, ApplicationWorkflowStepRepository>();
             services.AddScoped<ICardApplicationWriteRepository, CardApplicationRepository>();
-            services.AddScoped<ICheckbookApplicationWriteRepository, CheckbookApplicationRepository>();
             services.AddScoped<IExportRepository, ExportRepository>();
 
 
             // --- Multi-Contract Repositories (Explicitly Forwarded to Share the Same Instance) ---
+
+            services.AddScoped<CheckbookApplicationRepository>();
+            services.AddScoped<ICheckbookApplicationWriteRepository>(sp => sp.GetRequiredService<CheckbookApplicationRepository>());
+            services.AddScoped<ICheckbookApplicationReadTransactionRepository>(sp => sp.GetRequiredService<CheckbookApplicationRepository>());
 
             // PersonRepository
             services.AddScoped<PersonRepository>();

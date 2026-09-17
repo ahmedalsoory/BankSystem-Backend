@@ -10,16 +10,33 @@ using DTOs.CheckbookApplications;
 using Dapper;
 using Repositories.Queries;
 using RepositoryContracts.CheckbookApplication;
+using DTOs.Checkbook;
 
 
 namespace Repositories.Apps
 {
-    public class CheckbookApplicationRepository : BaseRepository, ICheckbookApplicationWriteRepository
+    public class CheckbookApplicationRepository : BaseRepository, 
+        ICheckbookApplicationWriteRepository, ICheckbookApplicationReadTransactionRepository
     {
         public CheckbookApplicationRepository(IDbContextScope dbContextScope, Context error
             , IAuditTracker auditTracker) : base(dbContextScope, error, auditTracker)
         {
 
+        }
+
+
+        public async Task<CheckbookDataForAddCheckbook> GetDataForAddCheckbook(int ApplicationID)
+        {
+            SetAction();
+            var connection = await GetConnectionAsync();
+            await BeginTransactionAsync();
+
+            CheckbookDataForAddCheckbook Data = await connection.QuerySingleAsync<CheckbookDataForAddCheckbook>(
+            Query.CheckbookApplication.GetDataForAddCheckbook,
+            new { ApplicationID },
+            transaction: base.CurrentTransaction
+        );
+            return Data;
         }
 
         public async Task<OperationResult<int>> AddNewCheckbookApplicationAsync(CheckbookApplicationsAddRequest request, int applicationId)

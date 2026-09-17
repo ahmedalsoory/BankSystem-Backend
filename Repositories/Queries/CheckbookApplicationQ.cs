@@ -58,5 +58,11 @@ namespace Repositories.Queries
                 @DeliveryMethod,
                 @OldCheckbookID
             )";
+
+        public const string GetDataForAddCheckbook = @"select  cb.ApplicationID , cb.NumberOfLeaves , 
+aa.AccountID
+from Apps.CheckbookApplications cb
+inner join Apps.AccountApplications aa on cb.ApplicationID = aa.ApplicationID
+where aa.ApplicationID=@ApplicationID";
     }
 }

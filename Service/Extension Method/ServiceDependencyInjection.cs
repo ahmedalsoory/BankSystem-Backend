@@ -103,11 +103,13 @@ namespace Service.Extension_Method
             services.AddScoped<IOnboardingApplicationTypesReadServcie, OnboardingApplicationTypesServcie>();
             services.AddScoped<IApplicationWorkflowStepReadService, ApplicationWorkflowStepService>();
             services.AddScoped<ICardApplicationWriteService, CardApplicationService>();
-            services.AddScoped<ICheckbookApplicationWriteService, CheckbookApplicationService>();
             services.AddScoped<ICSVExportService, CSVExportService>();
 
 
             // --- Multi-Contract Services (Explicitly Forwarded to Share the Same Instance) ---
+            services.AddScoped<CheckbookApplicationService>();
+            services.AddScoped<ICheckbookApplicationWriteService>(sp => sp.GetRequiredService<CheckbookApplicationService>());
+            services.AddScoped<ICheckbookApplicationReadTransactionService>(sp => sp.GetRequiredService<CheckbookApplicationService>());
 
             // AccountService
             services.AddScoped<AccountService>();
