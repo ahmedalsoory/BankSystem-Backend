@@ -24,6 +24,7 @@ using RepositoryContracts.AccountWorkflowRepository;
 using RepositoryContracts.ApplicationWorkflowStep;
 using RepositoryContracts.Card;
 using RepositoryContracts.CardApplication;
+using RepositoryContracts.Checkbook;
 using RepositoryContracts.CheckbookApplication;
 using RepositoryContracts.ClientRepo;
 using RepositoryContracts.DashboardRepo;
@@ -134,6 +135,10 @@ namespace Repositories.Extensions
             services.AddScoped<CardRepository>();
             services.AddScoped<ICardReadTransactionRepository>(sp => sp.GetRequiredService<CardRepository>());
             services.AddScoped<ICardWriteRepository>(sp => sp.GetRequiredService<CardRepository>());
+
+            // CardRepository
+            services.AddScoped<CheckbookRepository>();
+            services.AddScoped<ICheckbookWriteRepository>(sp => sp.GetRequiredService<CheckbookRepository>());
 
 
             // --- Validation Repositories ---
