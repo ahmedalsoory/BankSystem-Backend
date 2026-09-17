@@ -112,6 +112,7 @@ namespace Repositories.Queries
             public const string InsertNewCheckbookApplication = CheckbookApplicationQ.InsertNewCheckbookApplication;
             public const string InsertReplaceApplication = CheckbookApplicationQ.InsertReplaceApplication;
             public const string InsertRenewApplication = CheckbookApplicationQ.InsertRenewApplication;
+            public const string GetDataForAddCheckbook = CheckbookApplicationQ.GetDataForAddCheckbook;
         }
         public static class Checkbook
         {
