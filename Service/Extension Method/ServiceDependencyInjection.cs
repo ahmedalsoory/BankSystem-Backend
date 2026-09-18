@@ -33,6 +33,7 @@ using ServiceContract.Applications.Orchestrators;
 using ServiceContract.ApplicationWorkflowStep;
 using ServiceContract.Card;
 using ServiceContract.CardApplication;
+using ServiceContract.Checkbook;
 using ServiceContract.CheckbookApplication;
 using ServiceContract.Client;
 using ServiceContract.CSVExportService;
@@ -104,7 +105,8 @@ namespace Service.Extension_Method
             services.AddScoped<IApplicationWorkflowStepReadService, ApplicationWorkflowStepService>();
             services.AddScoped<ICardApplicationWriteService, CardApplicationService>();
             services.AddScoped<ICSVExportService, CSVExportService>();
-
+            services.AddScoped<ICheckbookWriteService, CheckbookService>();
+            //CheckbookService :BaseService<CheckbookService> ,ICheckbookWriteService
 
             // --- Multi-Contract Services (Explicitly Forwarded to Share the Same Instance) ---
             services.AddScoped<CheckbookApplicationService>();
