@@ -28,12 +28,13 @@ namespace Repositories.Validations
         {
             base.SetAction();
             var connection = await base.GetConnectionAsync();
+            await base.BeginTransactionAsync();
 
-            // Execute using externalized query
+
             int count = await connection.ExecuteScalarAsync<int>(
                 QueryValidtion.AccountOpeningValidation.CheckActiveApplications, // HUP: SQL is external
                 new { ClientID = clientID },
-                transaction: null // HUP: Explicitly non-transactional for Handshake phase
+                transaction: base.CurrentTransaction // HUP: Explicitly non-transactional for Handshake phase
             );
 
             if (count > 0)

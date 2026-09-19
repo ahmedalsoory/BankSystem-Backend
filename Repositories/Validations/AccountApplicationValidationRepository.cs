@@ -25,14 +25,13 @@ namespace Repositories.Validations
         {
             base.SetAction();
             var connection = await base.GetConnectionAsync();
-        
-        
+            await BeginTransactionAsync();       
             // 🚀 CRITICAL FIX 3: Always forward the transaction instance object down to Dapper 
             // to ensure it enlists inside the current middleware transaction context.
             int exists = await connection.ExecuteScalarAsync<int>(
              QueryValidtion.AccountApplicationValidation.CheckPendingApplication,
              new { AccountID = accountId, ApplicationTypeID = applicationTypeId }
-         );
+         ,base.CurrentTransaction);
             return exists == 1;
         }
 
