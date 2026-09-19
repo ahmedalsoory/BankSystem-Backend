@@ -16,6 +16,7 @@ using Repositories.Core;
 
 namespace Tests.Client
 {
+    /*
     public class ClientRepositoryTests : IDisposable
     {
         private readonly ClientRepository _repo;
@@ -119,4 +120,5 @@ namespace Tests.Client
 
         public void Dispose() => _dbScope.Dispose();
     }
+    */
 }

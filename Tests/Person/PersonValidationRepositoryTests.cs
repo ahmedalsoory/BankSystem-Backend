@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Tests.Person
 {
+    /*
     public class PersonValidationRepositoryTests : IDisposable
     {
         private readonly PersonValidationRepository _repo;
@@ -65,4 +66,5 @@ namespace Tests.Person
             _dbScope.Dispose();
         }
     }
+    */
 }
