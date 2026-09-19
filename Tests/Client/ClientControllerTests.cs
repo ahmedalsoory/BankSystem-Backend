@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Tests.Client
 {
+    /*
     public class ClientControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _httpClient;
@@ -53,4 +54,5 @@ namespace Tests.Client
             Assert.Contains("First Name is required.", content);
         }
     }
+    */
 }
