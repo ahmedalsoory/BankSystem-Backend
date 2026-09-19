@@ -37,7 +37,7 @@ namespace Repositories.Validations
         {
             base.SetAction();
             var connection = await base.GetConnectionAsync();
-
+            await base.BeginTransactionAsync();
             // Using QueryFirstOrDefaultAsync to check the balance query we built earlier
             var result = await connection.QueryFirstOrDefaultAsync<int?>(
                    QueryValidtion.TransactionValidation.IsBalanceHasWithdrawAmount,

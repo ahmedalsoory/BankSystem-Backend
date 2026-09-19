@@ -34,6 +34,7 @@ namespace Repositories.Validations
      
 
             var connection = await base.GetConnectionAsync();
+            await BeginTransactionAsync(); 
             return await connection.ExecuteScalarAsync<int>(QueryValidtion.WorkflowValidation.GetStepOrderIndex,
                 new { dto.ApplicationID, dto.StepName },
                 base.CurrentTransaction);
@@ -43,6 +44,7 @@ namespace Repositories.Validations
         {
   
             var connection = await base.GetConnectionAsync();
+            await BeginTransactionAsync();
             int blockingSteps = await connection.ExecuteScalarAsync<int>(QueryValidtion.WorkflowValidation.CheckForBlockingSteps,
                 new { dto.ApplicationID, TargetIndex = targetIndex },
                 base.CurrentTransaction);
