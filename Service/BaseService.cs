@@ -36,6 +36,20 @@ namespace Service
                 return OperationResult.Failure(errorMessage);
             }
         }
+        protected async Task<OperationResult<T>> ExecuteDbOperationAsync<T>(
+        Func<Task<OperationResult<T>>> operation,
+        string errorMessage)
+        {
+            try
+            {
+                return await operation();
+            }
+            catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
+            {
+                _logger.LogWarning(ex, "Business Rule Violation: Unique constraint conflict.");
+                return OperationResult<T>.Failure(errorMessage);
+            }
+        }
         //protected async Task<T> ExecuteDbOperationAsync(
         //  Func<Task<T>> operation
         //  )
@@ -50,26 +64,10 @@ namespace Service
         //        _logger.LogWarning(ex, "Business Rule Violation: Unique constraint conflict.");
 
         //        // Return friendly business failure
-                
+
         //    }
 
         //}
-        protected async Task<OperationResult<int>> ExecuteDbOperationAsync(
-           Func<Task<OperationResult<int>>> operation,
-           string errorMessage)
-        {
-            try
-            {
-                return await operation();
-            }
-            catch (SqlException ex) when (ex.Number == 2627 || ex.Number == 2601)
-            {
-                // Log for internal tracing (Middleware won't see this)
-                _logger.LogWarning(ex, "Business Rule Violation: Unique constraint conflict.");
-
-                // Return friendly business failure
-                return OperationResult<int>.Failure(errorMessage);
-            }
-        }
+     
     }
 }

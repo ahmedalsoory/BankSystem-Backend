@@ -41,22 +41,21 @@ namespace Service.Apps
             _readRepo = readRepo;
         }
 
-        public async Task<OperationResult> AddApplicationAsync(AccountOpeningApplicationAddRequest request)
+        public async Task<OperationResult<int>> AddApplicationAsync(AccountOpeningApplicationAddRequest request)
         {
             // 1. Validation (Cheap, non-DB operation)
             var errors = await _validation.ValidateAsync(request);
-            if (errors.Any()) return OperationResult.Failure(errors);
+            if (errors.Any()) return OperationResult<int>.Failure(errors);
 
             // 2. Orchestration: Wrap the ENTIRE logical unit in one DB Policy
-            return await ExecuteDbOperationAsync(async () =>
+            // 2. Orchestration: Wrap the ENTIRE logical unit in one DB Policy
+            return await ExecuteDbOperationAsync<int>(async () =>
             {
                 // A. Add Application
                 var appResult = await _writeRepo.AddApplicationAsync(request);
-                if (!appResult.Success) return OperationResult.Failure(appResult.Errors);
+                if (!appResult.Success) return OperationResult<int>.Failure(appResult.Errors);
 
                 // B. Add Workflow (Call the service, but it will share the same transaction!)
-                // IMPORTANT: Ensure AddWorkflowStepsAsync uses the current transaction 
-                // provided by DbContextScope.
                 var workflowResult = await _workflowWriteService.AddWorkflowStepsAsync(new WorkflowInitializationRequest
                 {
                     ApplicationID = appResult.Data,
@@ -64,9 +63,9 @@ namespace Service.Apps
                 });
 
                 if (!workflowResult.Success)
-                    return OperationResult.Failure("Workflow initialization failed.");
+                    return OperationResult<int>.Failure("Workflow initialization failed.");
 
-                return OperationResult.Ok();
+                return appResult;
             }, "An error occurred while creating the account application.");
         }
 

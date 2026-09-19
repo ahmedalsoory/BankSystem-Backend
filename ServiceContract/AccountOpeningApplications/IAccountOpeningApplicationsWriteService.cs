@@ -12,6 +12,6 @@ namespace ServiceContract.AccountOpeningApplications
     {
         Task<OperationResult> Cancelled(int applicationID);
         Task<OperationResult> Completed(int applicationID);
-        Task<OperationResult> AddApplicationAsync(AccountOpeningApplicationAddRequest request);
+        Task<OperationResult<int>> AddApplicationAsync(AccountOpeningApplicationAddRequest request);
     }
 }
