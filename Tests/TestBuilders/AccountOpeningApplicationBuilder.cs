@@ -63,7 +63,7 @@ namespace Tests.TestBuilders
             return this;
         }
 
-        public async Task<OperationResult> BuildAsync(IAccountOpeningApplicationsWriteService writeService)
+        public async Task<OperationResult<int>> BuildAsync(IAccountOpeningApplicationsWriteService writeService)
         {
             return await writeService.AddApplicationAsync(_request);
         }
