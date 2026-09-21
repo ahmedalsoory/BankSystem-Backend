@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -17,6 +17,7 @@
     <!-- Use a stable v7 for .NET 6 -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="NBomber" Version="6.6.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <!-- The stable standard -->
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
