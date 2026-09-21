@@ -35,7 +35,13 @@ namespace Tests.TestBuilders
             _request.NationalId = nationalId;
             return this;
         }
+        public PersonBuilder WithPhone(string phone)
+        {
+            _request.Phone = phone;
+            return this;
+        }
 
+        
         public PersonBuilder WithEmail(string email)
         {
             _request.Email = email;
