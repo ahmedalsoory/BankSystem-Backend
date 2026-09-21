@@ -5,7 +5,6 @@ using Shared.Extensions;
 using Service.Extension_Method;
 using Repositories.Extensions;
 
-
 namespace Tests
 {
     public class Startup
@@ -20,6 +19,9 @@ namespace Tests
 
             services.AddSingleton<IConfiguration>(configuration);
             services.AddHttpContextAccessor();
+
+            // 1. ADD THIS LINE: Required by services using ILogger<T>
+            services.AddLogging();
 
             // 2. Register shared infrastructure (DbContextScope, IDbConnectionProvider, Context, AuditTracker, etc.)
             services.AddSharedServices();
