@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceContract.Client;
 using Shared.Interfaces;
 using System;
@@ -6,20 +7,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tests.Globle;
 using Tests.TestBuilders;
 using Tests.TestBuilders.Extensions;
 
 namespace Tests
 {
-    public class ClientTest
+    public class ClientTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>
     {
         private readonly IClientWriteService _clientWriteService;
-        private readonly IDbContextScope _dbContextScope;
 
-        public ClientTest(IClientWriteService clientWriteService, IDbContextScope dbContextScope)
+        public ClientTest(IntegrationTestFixture fixture) : base(fixture)
         {
-            _clientWriteService = clientWriteService;
-            _dbContextScope = dbContextScope;
+            var scope = _serviceProvider.CreateScope();
+            _clientWriteService = scope.ServiceProvider.GetRequiredService<IClientWriteService>();
         }
 
         [Fact]
@@ -37,8 +38,8 @@ namespace Tests
             result.Success.Should().BeTrue($"because: {string.Join(", ", result.Errors)}");
             result.Data.Should().BeGreaterThan(0);
 
-            // Explicitly commit so it persists in the test database for verification
-            _dbContextScope.Commit();
+            // Mark the test as successful so the transaction pipeline commits automatically on dispose
+            MarkTestAsSuccessful();
         }
     }
 }
