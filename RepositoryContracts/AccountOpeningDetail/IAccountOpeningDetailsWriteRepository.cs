@@ -11,7 +11,7 @@ namespace RepositoryContracts.AccountOpeningDetail
     public interface IAccountOpeningDetailsWriteRepository
     {
         // Save or Update a requirement (upsert logic)
-        Task<OperationResult> AddDetailAsync(AccountOpeningDetailRequest request);
+        Task<OperationResult<int>> AddDetailAsync(AccountOpeningDetailRequest request);
 
         // Used for modifications/corrections
      

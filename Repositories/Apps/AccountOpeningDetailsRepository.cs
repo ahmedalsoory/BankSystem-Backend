@@ -34,27 +34,26 @@ namespace Repositories.Apps
            
         }
 
-        public async Task<OperationResult> AddDetailAsync(AccountOpeningDetailRequest request)
+        public async Task<OperationResult<int>> AddDetailAsync(AccountOpeningDetailRequest request)
         {
             SetAction();
             var connection = await GetConnectionAsync();
             await BeginTransactionAsync();
 
-            var affectedRows = await connection.ExecuteAsync(
+            var insertedId = await connection.QuerySingleAsync<int>(
                 Query.AccountOpeningDetail.Add, request, CurrentTransaction);
 
-           if(affectedRows ==0) 
-                return OperationResult.Failure("Failed to add detail.");
+            if (insertedId == 0)
+                return OperationResult<int>.Failure("Failed to add detail.");
+
             _auditTracker?.AddEntry(
-     tableName: "AccountOpeningDetail",
-     recordId: request.ApplicationID.ToString(),
-     operationType: "Update",
-     userId: "2");
+                tableName: "AccountOpeningDetail",
+                recordId: request.ApplicationID.ToString(),
+                operationType: "Insert",
+                userId: "2");
 
-
-            return OperationResult.Ok();
+            return OperationResult<int>.Ok(insertedId);
         }
-
         public async Task<IEnumerable<AccountOpeningDetailResponse>> GetDetailsByApplicationIdAsync(int applicationId)
         {
             SetAction();
