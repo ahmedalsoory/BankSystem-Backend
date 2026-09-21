@@ -10,7 +10,7 @@ namespace ServiceContract.AccountOpeningDetails
 {
     public interface IAccountOpeningDetailsWriteService
     {
-        Task<OperationResult> AddDetailAsync(AccountOpeningDetailRequest request);
+        Task<OperationResult<int>> AddDetailAsync(AccountOpeningDetailRequest request);
 
         // Used for modifications/corrections
         Task<OperationResult> VerifiedStatusAsync(VerifiedStatusRequest request);
