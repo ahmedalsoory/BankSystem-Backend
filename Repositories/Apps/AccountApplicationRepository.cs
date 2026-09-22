@@ -101,9 +101,6 @@ namespace Repositories.Apps
 
             return OperationResult<int>.Ok(newId);
         }
-
-
-
         public async Task<bool> UpdateStatusAsync(AccountApplicationStatusUpdateRequest request)
         {
             base.SetAction();
@@ -135,12 +132,6 @@ namespace Repositories.Apps
 
 
         }
-
-
-
-
-
-
         public async Task<PagedResult<AccountApplicationListItem>> GetApplicationsPagedAsync(AccountApplicationPagedRequest request)
         {
             SetAction();
@@ -223,169 +214,5 @@ namespace Repositories.Apps
             return (where, accountId, filterValue);
         }
 
-
-        // =========================================================================
-        // HIGH PERFORMANCE ADVANCED PAGINATION (ADO.NET Reader)
-        // =========================================================================
-
-        /*
-        public async Task<PagedResult<AccountApplicationListItem>> GetApplicationsPagedAsync(
-       AccountApplicationPagedRequest request)
-        {
-            base.SetAction();
-
-            List<AccountApplicationListItem> records = null!;
-            int totalCount = 0;
-
-            // Invoke our generic execution handler engine
-            await ExecuteApplicationReaderAsync(
-                request,
-                onCountCalculated: (expectedAllocationSize) =>
-                {
-                    // Senior-level optimization: Allocate exact list capacity up-front
-                    records = new List<AccountApplicationListItem>(expectedAllocationSize);
-                },
-                rowProcessor: async (reader) =>
-                {
-                    records.Add(MapSqlReaderToApplicationResponse(reader));
-                    await Task.CompletedTask; // Satisfies async signature cleanly
-                },
-                totalCountCallback: (count) =>
-                {
-                    totalCount = count;
-                });
-
-            return new PagedResult<AccountApplicationListItem>
-            {
-                Data = records ?? new List<AccountApplicationListItem>(0),
-                TotalCount = totalCount
-            };
-        }
-
-        private async Task ExecuteApplicationReaderAsync(
-            AccountApplicationPagedRequest request,
-            Action<int> onCountCalculated,
-            Func<SqlDataReader, Task> rowProcessor,
-            Action<int> totalCountCallback)
-        {
-            // 1. Establish strict sorting whitelists
-            string sortDir = request.Direction == Direction.DESC ? "DESC" : "ASC";
-            string orderByClause = request.SortBy switch
-            {
-                SortedBy_AccountApplication.Status => $"AA.Status {sortDir}",
-                SortedBy_AccountApplication.ApplicationTypeID => $"AA.ApplicationTypeID {sortDir}",
-                SortedBy_AccountApplication.CreatedDate => $"AA.CreatedDate {sortDir}",
-                _ => $"AA.CreatedDate {sortDir}"
-            };
-
-            // 2. 🧠 THE MAGIC: Initialize WhereClause based on AccountApplication context
-            string whereClause = "";
-            object sqlAccountParam = DBNull.Value;
-
-            if (request.AccountId.HasValue && request.AccountId.Value > 0)
-            {
-                // Use Case A: AccountApplication Details Page View
-                whereClause = "WHERE AA.AccountID = @AccountId";
-                sqlAccountParam = request.AccountId.Value;
-            }
-            else
-            {
-                // Use Case B: Global Application Grid View
-                whereClause = "WHERE 1=1"; // Allows seamless appending using "AND" strings
-            }
-
-            // 3. Multi-layered dynamic grid filter parsing
-            object sqlValueParam = DBNull.Value;
-
-            if (request.FilterBy != null && !string.IsNullOrWhiteSpace(request.FilterValue))
-            {
-                string trimmedValue = request.FilterValue.Trim();
-
-                switch (request.FilterBy.Value)
-                {
-                    case Filter_AccountApplication.ApplicationTypeID:
-                        if (byte.TryParse(trimmedValue, out byte typeId))
-                        {
-                            whereClause += " AND AA.ApplicationTypeID = @Value";
-                            sqlValueParam = typeId;
-                        }
-                        break;
-
-                    case Filter_AccountApplication.Status:
-                        if (byte.TryParse(trimmedValue, out byte statusId))
-                        {
-                            whereClause += " AND AA.Status = @Value";
-                            sqlValueParam = statusId;
-                        }
-                        break;
-
-                    case Filter_AccountApplication.AccountID:
-                        // If filtering by AccountApplication ID explicitly from the global dashboard grid
-                        if (int.TryParse(trimmedValue, out int accountId))
-                        {
-                            whereClause += " AND AA.AccountID = @Value";
-                            sqlValueParam = accountId;
-                        }
-                        break;
-                }
-            }
-
-            // 4. Stored Procedure invocation block
-            using (var connection = new SqlConnection(base._connectionString))
-            using (var command = new SqlCommand("dbo.sp_GetAccountApplicationsPaged", connection))
-            {
-                command.CommandType = CommandType.StoredProcedure;
-
-                // Map parameters cleanly to our new unified SP signature
-                command.Parameters.AddWithValue("@AccountId", sqlAccountParam);
-                command.Parameters.AddWithValue("@Offset", (request.PageNumber - 1) * request.PageSize);
-                command.Parameters.AddWithValue("@PageSize", request.PageSize);
-                command.Parameters.AddWithValue("@OrderBy", orderByClause);
-                command.Parameters.AddWithValue("@WhereClause", whereClause);
-                command.Parameters.AddWithValue("@Value", sqlValueParam);
-
-                await connection.OpenAsync();
-
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    // Result Set 1: Total Count processing 
-                    if (await reader.ReadAsync())
-                    {
-                        int totalFilteredRows = reader.GetInt32(0);
-                        totalCountCallback(totalFilteredRows);
-
-                        int expectedRowsOnPage = Math.Min(request.PageSize, totalFilteredRows - ((request.PageNumber - 1) * request.PageSize));
-                        expectedRowsOnPage = Math.Max(0, expectedRowsOnPage);
-
-                        onCountCalculated(expectedRowsOnPage);
-                    }
-
-                    // Result Set 2: Paged data records stream execution
-                    if (await reader.NextResultAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            await rowProcessor(reader);
-                        }
-                    }
-                }
-            }
-        }
-
-        private AccountApplicationListItem MapSqlReaderToApplicationResponse(SqlDataReader reader)
-        {
-            return new AccountApplicationListItem
-            {
-                ApplicationID = reader.GetInt32(reader.GetOrdinal("ApplicationID")),
-                AccountID = reader.GetInt32(reader.GetOrdinal("AccountID")),
-                ApplicationTypeID = reader.GetByte(reader.GetOrdinal("ApplicationTypeID")),
-                Status = reader.GetByte(reader.GetOrdinal("Status")),
-                CreatedDate = reader.GetDateTime(reader.GetOrdinal("CreatedDate")),
-                CreatedByUserID = reader.GetInt32(reader.GetOrdinal("CreatedByUserID")),
-
-            };
-        }
-
-    */
     }
 }
