@@ -13,7 +13,7 @@ namespace Tests.TestBuilders
     public class ClientBuilder
     {
         private readonly ClientAddRequest _clientRequest;
-
+        private readonly ClientUpdateRequest _clientUpdateRequest;
         public ClientBuilder(PersonAddRequest personRequest)
         {
             // Map base person fields into the specific ClientAddRequest
@@ -32,17 +32,22 @@ namespace Tests.TestBuilders
                 IsActive = true,
                 RiskLevel = 1
             };
+            _clientUpdateRequest = new ClientUpdateRequest();
         }
 
         public ClientBuilder WithRiskLevel(byte riskLevel)
         {
             _clientRequest.RiskLevel = riskLevel;
+
+            _clientUpdateRequest.RiskLevel = riskLevel;
             return this;
         }
 
         public ClientBuilder WithIsActive(bool isActive)
         {
             _clientRequest.IsActive = isActive;
+
+            _clientUpdateRequest.IsActive = isActive;
             return this;
         }
 
@@ -51,5 +56,10 @@ namespace Tests.TestBuilders
         {
             return await clientService.CreateAsync(_clientRequest, profileImage: null);
         }
+        public async Task<OperationResult> UpdateAsync(IClientWriteService clientService)
+        {
+            return await clientService.UpdateAsync(_clientUpdateRequest, profileImage: null);
+        }
+
     }
 }
