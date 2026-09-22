@@ -10,6 +10,7 @@ namespace Tests.TestBuilders
     public class PersonBuilder
     {
         protected readonly PersonAddRequest _request = new();
+        protected readonly PersonUpdateRequest _updateRequest = new();
 
         public PersonBuilder()
         {
@@ -27,6 +28,9 @@ namespace Tests.TestBuilders
         {
             _request.FirstName = firstName;
             _request.LastName = lastName;
+
+            _updateRequest .FirstName = firstName;
+            _updateRequest .LastName = lastName;
             return this;
         }
 
@@ -38,6 +42,7 @@ namespace Tests.TestBuilders
         public PersonBuilder WithPhone(string phone)
         {
             _request.Phone = phone;
+            _updateRequest.Phone = phone;
             return this;
         }
 
@@ -45,10 +50,12 @@ namespace Tests.TestBuilders
         public PersonBuilder WithEmail(string email)
         {
             _request.Email = email;
+            _updateRequest.Email = email;
             return this;
         }
 
         // Expose the base request to the extension method
+        internal PersonUpdateRequest GetUpdateRequest() => _updateRequest;  
         internal PersonAddRequest GetRequest() => _request;
     }
 }
