@@ -4,6 +4,7 @@ using Shared.Interfaces;
 using Shared.Extensions;
 using Service.Extension_Method;
 using Repositories.Extensions;
+using Shared;
 
 namespace Tests
 {
@@ -15,6 +16,11 @@ namespace Tests
                  .SetBasePath(Directory.GetCurrentDirectory())
                  .AddJsonFile("appsettings.json", optional: true)
                  .AddEnvironmentVariables()
+                 .AddInMemoryCollection(new Dictionary<string, string?>
+           {
+               { "CardSecurity:SecretKey", "TestSecretKey_ForIntegrationTestingOnly_12345!" }
+           })
+          
                  .Build();
 
             services.AddSingleton<IConfiguration>(configuration);
@@ -25,6 +31,7 @@ namespace Tests
 
             // 2. Register shared infrastructure (DbContextScope, IDbConnectionProvider, Context, AuditTracker, etc.)
             services.AddSharedServices();
+            services.Configure<DbSettings>(configuration.GetSection("ConnectionStrings"));
 
             // 3. Register all Repositories & Services using your existing extensions
             services.AddBankRepositories();
