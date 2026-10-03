@@ -11,7 +11,9 @@ namespace Tests.Globle
     public abstract class IntegrationTestBase : IAsyncLifetime
     {
         protected readonly IServiceProvider _serviceProvider;
+        protected AsyncServiceScope _testScope; // <-- Hold the scope here
         protected IDbContextScope _dbContextScope;
+        protected IServiceProvider _scopedServiceProvider; // <-- Use this for resolving services
         private bool _isTestSuccessful = false;
 
         protected IntegrationTestBase(IntegrationTestFixture fixture)
@@ -21,12 +23,16 @@ namespace Tests.Globle
 
         public async Task InitializeAsync()
         {
-            _dbContextScope = _serviceProvider.GetRequiredService<IDbContextScope>();
+            // 1. Create ONE scope per test execution
+            _testScope = _serviceProvider.CreateAsyncScope();
+            _scopedServiceProvider = _testScope.ServiceProvider;
+
+            // 2. Resolve the transaction scope from THAT SAME scope
+            _dbContextScope = _scopedServiceProvider.GetRequiredService<IDbContextScope>();
             await _dbContextScope.BeginTransactionAsync();
-            _isTestSuccessful = false; // Reset for each test
+            _isTestSuccessful = false;
         }
 
-        // Call this at the very end of your test if all assertions pass
         protected void MarkTestAsSuccessful()
         {
             _isTestSuccessful = true;
@@ -40,18 +46,18 @@ namespace Tests.Globle
                 {
                     if (_isTestSuccessful)
                     {
-                        // If the test reached the end successfully, commit the transaction
                         _dbContextScope.Commit();
                     }
                     else
                     {
-                        // If an assertion failed or an exception occurred, roll back
                         _dbContextScope.Rollback();
                     }
                 }
                 finally
                 {
                     await _dbContextScope.DisposeAsync();
+                    // Dispose the test scope as well to clean up services
+                    await _testScope.DisposeAsync();
                 }
             }
         }
