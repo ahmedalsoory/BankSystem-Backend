@@ -49,7 +49,7 @@ namespace API.Controllers
 
         }
         [HttpGet("client/{accountNumber}")]
-        public async Task<ClientResponse?> GetByAccountNumberAsync(string accountNumber
+        public async Task<ClientDetailDto?> GetByAccountNumberAsync(string accountNumber
            )
         {
             return await _clientReadService.GetByAccountNumberAsync(accountNumber).ConfigureAwait(false); ;

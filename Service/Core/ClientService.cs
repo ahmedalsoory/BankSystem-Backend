@@ -49,6 +49,7 @@ namespace Service.Core
 
             return await _clientReadRepository.GetByPersonIDAsync(Id);
         }
+
         public async Task<OperationResult<int>> CreateAsync(ClientAddRequest registerClientRequest
             , IFormFile? profileImage)
         {
@@ -83,12 +84,13 @@ namespace Service.Core
 
 
 
-        public async Task<ClientResponse?> GetByAccountNumberAsync(string accountNumber)
+        public async Task<ClientDetailDto?> GetByAccountNumberAsync(string accountNumber)
         {
 
             return await _clientReadRepository.GetByAccountNumberAsync(accountNumber);
 
         }
+
 
         async Task<PagedResult<ClientListItemDto>> IClientReadService.GetClientsAsync(ClientPagedRequest request)
         {

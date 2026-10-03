@@ -37,7 +37,7 @@ namespace Repositories.Core
 
         }
 
-        public async Task<ClientResponse?> GetByAccountNumberAsync(string accountNumber)
+        public async Task<ClientDetailDto?> GetByAccountNumberAsync(string accountNumber)
         {
             SetAction();
             using var connection = new SqlConnection(base._connectionString);
@@ -49,7 +49,7 @@ namespace Repositories.Core
              cancellationToken: base.CancellationToken // Pass it here
             );
 
-            return await connection.QueryFirstOrDefaultAsync<ClientResponse>(command);
+            return await connection.QueryFirstOrDefaultAsync<ClientDetailDto>(command);
         }
 
         public async Task<ClientDetailDto?> GetByPersonIDAsync(int Id)

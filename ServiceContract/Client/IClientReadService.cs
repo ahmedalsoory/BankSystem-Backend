@@ -12,7 +12,7 @@ namespace ServiceContract.Client
 {
     public interface IClientReadService
     {
-        Task<ClientResponse?> GetByAccountNumberAsync(string accountNumber);
+        Task<ClientDetailDto?> GetByAccountNumberAsync(string accountNumber);
         Task<ClientDetailDto?> GetByClientIDAsync(int Id);
         Task<PagedResult<ClientListItemDto>> GetClientsAsync(
      ClientPagedRequest request);
