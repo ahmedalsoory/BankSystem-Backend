@@ -1,16 +1,38 @@
 ﻿using DTOs.Person;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Tests.TestBuilders
 {
+    public enum PersonFailureType
+    {
+        None,
+        PhoneAlreadyExists,
+        EmailAlreadyExists,
+        InvalidNationalId
+    }
+
+    public class PersonTestScenario
+    {
+        public PersonFailureType FailureType { get; private set; } = PersonFailureType.None;
+
+        public PersonTestScenario Success()
+        {
+            FailureType = PersonFailureType.None;
+            return this;
+        }
+
+        public PersonTestScenario Fail(PersonFailureType failureType)
+        {
+            FailureType = failureType;
+            return this;
+        }
+    }
+
     public class PersonBuilder
     {
         protected readonly PersonAddRequest _request = new();
         protected readonly PersonUpdateRequest _updateRequest = new();
+        protected PersonTestScenario? _scenario;
 
         public PersonBuilder()
         {
@@ -29,16 +51,18 @@ namespace Tests.TestBuilders
             _request.FirstName = firstName;
             _request.LastName = lastName;
 
-            _updateRequest .FirstName = firstName;
-            _updateRequest .LastName = lastName;
+            _updateRequest.FirstName = firstName;
+            _updateRequest.LastName = lastName;
             return this;
         }
 
         public PersonBuilder WithNationalId(string nationalId)
         {
             _request.NationalId = nationalId;
+            _updateRequest.NationalId = nationalId;
             return this;
         }
+
         public PersonBuilder WithPhone(string phone)
         {
             _request.Phone = phone;
@@ -46,7 +70,6 @@ namespace Tests.TestBuilders
             return this;
         }
 
-        
         public PersonBuilder WithEmail(string email)
         {
             _request.Email = email;
@@ -54,8 +77,36 @@ namespace Tests.TestBuilders
             return this;
         }
 
-        // Expose the base request to the extension method
-        internal PersonUpdateRequest GetUpdateRequest() => _updateRequest;  
+        // Scenario hook for negative testing (e.g., .Create(s => s.Fail(PersonFailureType.EmailAlreadyExists)))
+        public PersonBuilder Create(Action<PersonTestScenario> scenarioAction)
+        {
+            _scenario = new PersonTestScenario();
+            scenarioAction(_scenario);
+            if(_scenario.FailureType != PersonFailureType.None)
+            {
+                var dbPerson = PersonDataHelper.GetPersonDataAsync().GetAwaiter().GetResult();
+                switch (_scenario.FailureType)
+                 {
+                     case PersonFailureType.PhoneAlreadyExists:
+                         _request.Phone = dbPerson.Phone;
+                         break;
+
+                     case PersonFailureType.EmailAlreadyExists:
+                        _request.Email = dbPerson.Email;
+                         break;
+
+                     case PersonFailureType.InvalidNationalId:
+                         _request.NationalId = dbPerson.NationalId;
+                         break;
+
+                 }
+            }
+            return this;
+        }
+
+        // Internal exposures for extension methods and downstream builders
+        internal PersonUpdateRequest GetUpdateRequest() => _updateRequest;
         internal PersonAddRequest GetRequest() => _request;
+        internal PersonTestScenario? GetScenario() => _scenario;
     }
 }
