@@ -1,6 +1,7 @@
 using API.Extensions;
 using API.Filter.Extensions;
 using Service;
+using ServiceContract;
 using Shared;
 using Shared.Extensions;
 
@@ -12,6 +13,7 @@ builder.AddCustomSerilog();
 builder.Services.Configure<DbSettings>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services.AddHostedService<DashboardAggregationWorker>();
 
+builder.Services.AddHttpClient<IPerformanceAlertService, TelegramPerformanceAlertService>();
 builder.Services.AddApplicationServices();
 builder.Services.AddSharedServices();
 builder.Services.AddBankingFiltersServices();
