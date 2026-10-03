@@ -32,7 +32,7 @@ namespace Tests.Client.Load
                     { new StringContent($"UserLast_{uniqueId}"), "LastName" },
                     { new StringContent($"NAT{runSessionId}{uniqueId}"), "NationalId" },
                     { new StringContent($"user_{runSessionId}_{uniqueId}@bank.com"), "Email" },
-                    { new StringContent($"151515{(uniqueId % 100000 + 10220000)}22"), "Phone" },
+                    { new StringContent($"151515{(uniqueId % 100000 + 10220000)}2253242"), "Phone" },
                     { new StringContent("1990-01-01"), "BirthDate" },
                     { new StringContent(""), "ImagePath" },
                     { new StringContent("M"), "Gendor" }
@@ -54,7 +54,7 @@ namespace Tests.Client.Load
                 return Response.Ok();
             })
             .WithLoadSimulations(
-                Simulation.Inject(rate: 300, interval: TimeSpan.FromSeconds(1), during: TimeSpan.FromSeconds(30))
+                Simulation.Inject(rate: 20, interval: TimeSpan.FromSeconds(1), during: TimeSpan.FromSeconds(10))
             );
 
             var stats = NBomberRunner

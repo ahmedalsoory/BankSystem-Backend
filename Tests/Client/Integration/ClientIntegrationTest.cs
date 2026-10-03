@@ -1,5 +1,6 @@
 ﻿using DTOs.Client;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceContract.Client;
 using Shared.Interfaces;
@@ -16,16 +17,13 @@ namespace Tests.Client.Integration
 {
     public partial class ClientIntegrationTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>
     {
-        protected readonly IClientWriteService _clientWriteService;
-        protected readonly IClientReadService _clientReadService;
-        private readonly IDbConnectionProvider _connectionProvider;
+        protected IClientWriteService _clientWriteService => _scopedServiceProvider.GetRequiredService<IClientWriteService>();
+        protected IClientReadService _clientReadService => _scopedServiceProvider.GetRequiredService<IClientReadService>();
+        protected IDbContextScope _connectionProvider => _dbContextScope;
 
         public ClientIntegrationTest(IntegrationTestFixture fixture) : base(fixture)
         {
-            var scope = _serviceProvider.CreateScope();
-            _connectionProvider = scope.ServiceProvider.GetRequiredService<IDbContextScope>();
-            _clientWriteService = scope.ServiceProvider.GetRequiredService<IClientWriteService>();
-            _clientReadService = scope.ServiceProvider.GetRequiredService<IClientReadService>();
+            // Constructor stays clean. No manual scope creation here.
         }
     }
 }

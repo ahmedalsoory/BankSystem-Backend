@@ -6,6 +6,7 @@ using Tests.TestBuilders;
 using Tests.TestBuilders.Extensions;
 using Xunit;
 using Tests.Client.helper;
+using System;
 
 namespace Tests.Client.Integration
 {
@@ -14,20 +15,20 @@ namespace Tests.Client.Integration
         [Fact]
         public async Task UpdateAsync_WhenRowVersionIsStale_ShouldFailWithConcurrencyError()
         {
-            // 1. Arrange: Create a fresh client first using the builder
-            var createResult = await new PersonBuilder()
-                .WithName("Mohamed", "Ali")
-                .AsClient()
-                .WithRiskLevel(1)
-                .WithIsActive(true)
-                .BuildAsync(_clientWriteService);
-
-            createResult.Success.Should().BeTrue();
-            int personId = createResult.Data;
-
+            Random random = new Random();
+        int personId = random.Next(400058, 973015);
             // 2. Fetch the client to get valid, fresh RowVersions
-            var clientDetail = await TestDataHelper.GetClientDetailDirectlyAsync(createResult.Data,
-                _connectionProvider);
+
+            var clientDetail = null as ClientDetailDto;
+            clientDetail = await TestClientDataHelper.GetClientDetailDirectlyAsync(personId,
+               _connectionProvider);
+            while (clientDetail == null)
+            {
+                 personId = random.Next(400058, 973015);
+                clientDetail = await TestClientDataHelper.GetClientDetailDirectlyAsync(personId,
+               _connectionProvider);
+
+            }
             clientDetail.Should().NotBeNull();
 
             // 3. Prepare the update request with current tokens

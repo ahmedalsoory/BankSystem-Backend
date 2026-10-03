@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Service.Core;
 using System.Threading.Tasks;
 using Tests.TestBuilders;
 using Tests.TestBuilders.Extensions;
@@ -26,5 +27,46 @@ namespace Tests.Client.Integration
             // Mark the test as successful so the transaction pipeline commits automatically on dispose
             MarkTestAsSuccessful();
         }
+        [Fact]
+        public async Task CreateClient_WhenEmailAlreadyExists_ShouldFailConstraint()
+        {
+            // Arrange & Act
+            var result = await new PersonBuilder()
+                .Create(s => s.Fail(PersonFailureType.EmailAlreadyExists))
+                 .AsClient()
+                .BuildAsync(_clientWriteService);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Errors.Should().Contain("Email");
+        }
+        [Fact]
+        public async Task CreateClient_WhenPhoneAlreadyExists_ShouldFailConstraint()
+        {
+            // Arrange & Act
+            var result = await new PersonBuilder()
+                .Create(s => s.Fail(PersonFailureType.PhoneAlreadyExists))
+                .AsClient()
+              
+                .BuildAsync(_clientWriteService);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Errors.Should().Contain("Phone");
+        }
+        [Fact]
+        public async Task CreateClient_WhenNationalIdIsInvalid_ShouldFailConstraint()
+        {
+            // Arrange & Act
+            var result = await new PersonBuilder()
+                .Create(s => s.Fail(PersonFailureType.InvalidNationalId))
+                .AsClient()
+                .BuildAsync(_clientWriteService);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            result.Errors.Should().Contain("NationalId");
+        }
+
     }
 }
