@@ -1,12 +1,19 @@
 ﻿using DTOs.Client;
 using DTOs.Person;
+using ServiceContract.AccountOpeningApplications.Orchestrators;
+using ServiceContract.AccountOpeningApplications;
+using ServiceContract.AccountOpeningDetails;
 using ServiceContract.Client;
 using Shared;
+using Shared.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tests.Helper;
+using static Tests.Helper.AccountWorkflowExecutionHelper;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.TestBuilders
 {
@@ -61,5 +68,29 @@ namespace Tests.TestBuilders
             return await clientService.UpdateAsync(_clientUpdateRequest, profileImage: null);
         }
 
+        public async Task<WorkflowExecutionResult> ExecuteFullWorkflowAsync(
+        IServiceProvider scopedServiceProvider, // Pass the active container/scope
+        float initailDeposit = 4000)
+        {
+            // Automatically resolve services from the active test scope
+            var clientWriteService = scopedServiceProvider.GetRequiredService<IClientWriteService>();
+            var appWriteService = scopedServiceProvider.GetRequiredService<IAccountOpeningApplicationsWriteService>();
+            var detailsWriteService = scopedServiceProvider.GetRequiredService<IAccountOpeningDetailsWriteService>();
+            var orchestrator = scopedServiceProvider.GetRequiredService<IAccountOpeningOrchestrator>();
+            var connectionProvider = scopedServiceProvider.GetRequiredService<IDbConnectionProvider>();
+
+            return await AccountWorkflowExecutionHelper.ExecuteWorkflowAsync(
+                clientWriteService,
+                appWriteService,
+                detailsWriteService,
+                orchestrator,
+                connectionProvider,
+                _clientRequest.FirstName,
+                _clientRequest.LastName,
+                _clientRequest.Email,
+                initailDeposit
+            );
+
+        }
     }
 }
