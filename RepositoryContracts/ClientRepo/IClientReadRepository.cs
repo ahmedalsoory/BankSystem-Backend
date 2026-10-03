@@ -13,7 +13,7 @@ namespace RepositoryContracts.ClientRepo
 {
     public interface IClientReadRepository
     {
-        Task<ClientResponse?> GetByAccountNumberAsync(string accountNumber);
+        Task<ClientDetailDto?> GetByAccountNumberAsync(string accountNumber);
         Task<ClientDetailDto?> GetByPersonIDAsync(int Id);
 
         Task<string> GetNextClientNumberAsync();
