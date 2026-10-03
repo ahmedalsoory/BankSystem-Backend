@@ -12,6 +12,7 @@ namespace Tests.Helper
             IDbConnectionProvider connectionProvider,
             IDbContextScope dbContextScope = null) // Accept optional scope to bind transaction
         {
+
             var connection = await connectionProvider.GetConnectionAsync();
             await connectionProvider.BeginTransactionAsync();
           

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tests.Helper;
+using Tests.TestBuilders;
+using Tests.TestBuilders.Extensions;
 
 namespace Tests.AccountOpeningOrchestrator.Integration
 {
@@ -13,18 +15,15 @@ namespace Tests.AccountOpeningOrchestrator.Integration
         [Fact]
         public async Task ProcessStatusVerification_WhenAllStepsCompletedDynamically_ShouldAutoCreateAccountAndDeposit()
         {
-            // 1. Arrange & Act: Execute the full dynamic workflow using the helper
-            var result = await AccountWorkflowExecutionHelper.ExecuteWorkflowAsync(
-                _serviceProvider,
-                "Ayman",
-                "Salem",
-                "ayman.salem@bank.com"
-            );
+         
+
+            var result = await new PersonBuilder().WithName("Ahm2ed", "ali")
+                .AsClient()
+                .ExecuteFullWorkflowAsync(_scopedServiceProvider);
 
             // 2. Assert
-            result.Success.Should().BeTrue($"because workflow execution failed: {result.Message}");
+            result.Success.Should().BeTrue($"because workflow execution failed: {result.ErrorMessage}");
 
-            _dbContextScope.Commit();
             MarkTestAsSuccessful();
         }
     }
