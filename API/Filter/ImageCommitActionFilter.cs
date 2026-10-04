@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using API.helper;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Shared.Image;
@@ -23,24 +24,35 @@ namespace API.Filter
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // 1. Execute the action and underlying services/database transaction
+            // 1. Execute the controller action
             var resultContext = await next();
 
-            // 2. If the action itself failed, do nothing (ExceptionFilter handles the rollback)
-            if (resultContext.Exception != null)
+            // 2. Check if the operation was successful
+            if (ResponseHelper.IsSuccessResponse(resultContext))
             {
-                return;
+                // 🎉 SUCCESS: Safely delete old replaced images from disk
+                try
+                {
+                    _imageHandler.CleanupOldImages(_env.WebRootPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while cleaning up old replaced images.");
+                }
             }
-
-            // 3. 🎉 SUCCESS! Database has committed. Safely delegate old image cleanup to ImageHandler.
-            try
+            else
             {
-                _imageHandler.CleanupOldImages(_env.WebRootPath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while cleaning up old replaced images.");
+                // ⚠️ FAILURE: Delete newly uploaded image so it doesn't become orphaned on disk
+                try
+                {
+                    _logger.LogWarning("Action failed or returned failure status. Cleaning up newly uploaded images.");
+                    _imageHandler.CleanupNewImages(_env.WebRootPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while cleaning up new uploaded images.");
+                }
             }
         }
-    }
+    } 
 }
