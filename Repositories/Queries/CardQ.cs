@@ -21,9 +21,17 @@ namespace Repositories.Queries
             @IsInternationalEnabled, @Status, @DailyWithdrawalLimit, 
             @DailyOnlinePurchaseLimit, GETDATE(), @PinHash
         );";
-        public static string GetDeatils = @"select CardTypeID , AccountID , CardHolderName from Apps.CardApplications ac
-inner join Apps.AccountApplications a on ac.ApplicationID = a.ApplicationID
-where a.ApplicationID = @ApplicationID";
+        public static string GetDetailsForReplacementOrRenew = @"select CardTypeID , AccountID , CardHolderName from Banking.Cards where ApplicationID = @ApplicationID";
+
+        public static string GetDetailsForIssueFirstTime = @"SELECT Banking.Accounts.AccountID,Core.Persons.FirstName + ' ' + Core.Persons.LastName AS CardHolderName, Apps.CardApplications.CardTypeID
+FROM     Core.Clients INNER JOIN
+                  Banking.Accounts ON Core.Clients.PersonId = Banking.Accounts.ClientID INNER JOIN
+                  Core.Persons ON Core.Clients.PersonId = Core.Persons.Id AND Core.Clients.PersonId = Core.Persons.Id AND Core.Clients.PersonId = Core.Persons.Id INNER JOIN
+                  Apps.AccountApplications ON Banking.Accounts.AccountID = Apps.AccountApplications.AccountID AND Banking.Accounts.AccountID = Apps.AccountApplications.AccountID INNER JOIN
+                  Apps.CardApplications ON Apps.AccountApplications.ApplicationID = Apps.CardApplications.ApplicationID AND Apps.AccountApplications.ApplicationID = Apps.CardApplications.ApplicationID AND 
+                  Apps.AccountApplications.ApplicationID = Apps.CardApplications.ApplicationID
+
+				  where Apps.CardApplications.ApplicationID= @ApplicationID";
 
         public static string UpdateStatus = @"UPDATE Banking.Cards SET Status = @newStatus
 WHERE CardID = @cardId";

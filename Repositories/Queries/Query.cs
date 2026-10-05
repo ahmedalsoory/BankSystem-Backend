@@ -103,7 +103,8 @@ namespace Repositories.Queries
         public static class Card
         {
             public static  string Insert = CardQ.Insert;
-            public static string GetDeatils = CardQ.GetDeatils;
+            public static string GetDetailsForReplacementOrRenew = CardQ.GetDetailsForReplacementOrRenew;
+            public static string GetDetailsForIssueFirstTime = CardQ.GetDetailsForIssueFirstTime;
             public static string UpdateStatus = CardQ.UpdateStatus;
             public static string GetCardIdByApplicationId = CardQ.GetCardIdByApplicationId;
         }
