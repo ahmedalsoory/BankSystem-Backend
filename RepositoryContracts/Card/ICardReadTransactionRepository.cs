@@ -9,7 +9,8 @@ namespace RepositoryContracts.Card
 {
     public interface ICardReadTransactionRepository
     {
-        Task<CardApplicationDetails> GetApplicationDetailsForCardCreationAsync(int applicationId);
+        Task<CardApplicationDetails> GetDetailsForReplacementOrRenew(int applicationId);
+        Task<CardApplicationDetails> GetDetailsForIssueFirstTime(int applicationId);
         Task<int?> GetCardIdByApplicationIdAsync(int applicationId);
     }
 }

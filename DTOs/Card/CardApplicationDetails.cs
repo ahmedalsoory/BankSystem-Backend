@@ -10,6 +10,6 @@ namespace DTOs.Card
     {
         public int AccountID { get; set; }
         public byte CardTypeID { get; set; }
-        public string ClientFullName { get; set; } = string.Empty;
+        public string CardHolderName { get; set; } = string.Empty;
     }
 }

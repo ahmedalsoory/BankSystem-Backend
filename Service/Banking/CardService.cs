@@ -40,7 +40,7 @@ namespace Service.Banking
             }
 
             // Then generate and insert the new card
-            return await GenerateAndInsertCardInternalAsync(applicationId);
+            return await GenerateAndInsertCardInternalAsync(applicationId,false);
         }
 
         // 3. PUBLIC: Replace an existing card
@@ -57,17 +57,23 @@ namespace Service.Banking
             
           
 
-            return await GenerateAndInsertCardInternalAsync(applicationId);
+            return await GenerateAndInsertCardInternalAsync(applicationId,false);
         }
 
         public async Task<OperationResult<int>> IssueCardAsync(int applicationId)
         {
             return await GenerateAndInsertCardInternalAsync(applicationId);
         }
-        private async Task<OperationResult<int>> GenerateAndInsertCardInternalAsync(int applicationId)
+        private async Task<OperationResult<int>> GenerateAndInsertCardInternalAsync(int applicationId
+            ,bool isFirstIssue=true)
         {
             // 1. Fetch application details (AccountID, CardTypeID, Customer Name)
-            var appDetails = await _read.GetApplicationDetailsForCardCreationAsync(applicationId);
+            CardApplicationDetails appDetails;
+            if (isFirstIssue)
+                appDetails = await _read.GetDetailsForIssueFirstTime(applicationId);
+            else
+                appDetails = await _read.GetDetailsForReplacementOrRenew(applicationId);
+
             if (appDetails == null)
             {
                 return  OperationResult<int>.Failure("card application deails do not exisy");
@@ -93,7 +99,7 @@ namespace Service.Banking
                 CardTypeID = appDetails.CardTypeID,
                 CardNumberHash = cardHash,
                 MaskedCardNumber = maskedNumber,
-                CardHolderName = appDetails.ClientFullName,
+                CardHolderName = appDetails.CardHolderName,
                 ExpirationDate = DateTime.UtcNow.AddYears(3), // Standard 3-year expiry
                 CVVHash = cvvHash,
                 PinHash = pinHashBytes,

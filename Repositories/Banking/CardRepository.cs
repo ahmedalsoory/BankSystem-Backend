@@ -25,14 +25,14 @@ namespace Repositories.Banking
         {
             
         }
-        public async Task<CardApplicationDetails> GetApplicationDetailsForCardCreationAsync(int applicationId)
+        public async Task<CardApplicationDetails> GetDetailsForReplacementOrRenew(int applicationId)
         {
             SetAction();
             var connection = await base.GetConnectionAsync();
             await base.BeginTransactionAsync();
 
             var result = await connection.QueryFirstOrDefaultAsync<CardApplicationDetails>(
-        Query.Card.GetDeatils,
+        Query.Card.GetDetailsForReplacementOrRenew,
         new { ApplicationID = applicationId },
         transaction: base.CurrentTransaction // Adjust this property name to match your base class transaction object
     );
@@ -99,6 +99,21 @@ namespace Repositories.Banking
                 (Query.Card.GetCardIdByApplicationId, new { ApplicationID = applicationId },CurrentTransaction);
 
             return cardId;
+        }
+
+        public async Task<CardApplicationDetails> GetDetailsForIssueFirstTime(int applicationId)
+        {
+            SetAction();
+            var connection = await base.GetConnectionAsync();
+            await base.BeginTransactionAsync();
+
+            var result = await connection.QueryFirstOrDefaultAsync<CardApplicationDetails>(
+        Query.Card.GetDetailsForIssueFirstTime,
+        new { ApplicationID = applicationId },
+        transaction: base.CurrentTransaction // Adjust this property name to match your base class transaction object
+    );
+
+            return result;
         }
     }
 }
