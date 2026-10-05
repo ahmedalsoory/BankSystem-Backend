@@ -1,10 +1,10 @@
-﻿using API.Attributes;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Data.SqlClient;
 using Polly;
 using Shared;
+using Shared.Image;
 using Shared.Interfaces;
 
 namespace API.Filter
@@ -12,38 +12,78 @@ namespace API.Filter
     public sealed class GlobalConnectionFilter : IAsyncActionFilter
     {
         private readonly IDbContextScope _dbScope;
-        public GlobalConnectionFilter(IDbContextScope dbScope) => _dbScope = dbScope;
+        private readonly IImageHandler _imageHandler;
+        private readonly IWebHostEnvironment _env;
+
+        public GlobalConnectionFilter(
+            IDbContextScope dbScope,
+            IImageHandler imageHandler,
+            IWebHostEnvironment env)
+        {
+            _dbScope = dbScope;
+            _imageHandler = imageHandler;
+            _env = env;
+        }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // Define the Polly retry policy using your existing IsTransient logic or standard SQL 1205 check
+            // Polly retry policy for deadlocks (1205) and timeouts (-2, 1222)
             var retryPolicy = Policy
-                .Handle<SqlException>(ex => ex.Number == 1205 && _dbScope.CurrentTransaction != null) // Or use your transient checker
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(50 * retryAttempt));
+                .Handle<SqlException>(ex =>
+                    (ex.Number == 1205 || ex.Number == -2 || ex.Number == 1222) && _dbScope.CurrentTransaction != null)
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(100 * retryAttempt));
 
-            // Wrap the entire request execution in the retry policy!
             await retryPolicy.ExecuteAsync(async () =>
             {
-                // Ensure fresh state on every retry attempt
                 await _dbScope.DisposeAsync();
 
-                var executedContext = await next();
-
-                if (_dbScope.CurrentTransaction != null)
+                try
                 {
-                    if (executedContext.Result is ObjectResult obj && obj.Value is OperationResult result && result.Success)
+                    var executedContext = await next();
+
+                    // Check if an unhandled exception happened during action execution
+                    if (executedContext.Exception != null && !executedContext.ExceptionHandled)
                     {
-                        _dbScope.Commit();
+                        HandleRollbackAndCleanup();
+                        return;
                     }
-                    else
+
+                    if (_dbScope.CurrentTransaction != null)
                     {
-                        _dbScope.Rollback();
+                        if (executedContext.Result is ObjectResult obj &&
+                            obj.Value is OperationResult result &&
+                            result.Success)
+                        {
+                            _dbScope.Commit();
+                        }
+                        else
+                        {
+                            HandleRollbackAndCleanup();
+                        }
                     }
                 }
-
-                _dbScope.CloseConnection();
+                catch (Exception)
+                {
+                    // Handles exceptions thrown outside executedContext (e.g., inside other filters)
+                    HandleRollbackAndCleanup();
+                    throw; // Rethrow to preserve global error handling
+                }
+                finally
+                {
+                    _dbScope.CloseConnection();
+                }
             });
+        }
+
+        private void HandleRollbackAndCleanup()
+        {
+            if (_dbScope.CurrentTransaction != null)
+            {
+                _dbScope.Rollback();
+            }
+
+            // Cleanup any temporary/new images created during this failed request
+            _imageHandler.CleanupNewImages(_env.WebRootPath);
         }
     }
 }
-
