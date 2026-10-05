@@ -9,6 +9,6 @@ namespace ServiceContract.Applications
 {
     public interface IAccountApplicationReadTransactionService
     {
-        Task<ApplicationType> GetApplicationTypeByIdAsync(int id);
+        Task<ApplicationType?> GetApplicationTypeByIdAsync(int id);
     }
 }
