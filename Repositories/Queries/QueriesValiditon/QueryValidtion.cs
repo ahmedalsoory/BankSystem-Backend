@@ -36,6 +36,7 @@ namespace Repositories.Queries.QueriesValiditon
 
         public static class CardApplicationValidtion
         {
+            public const string IsHasCardBefore = CardApplicationValidationQ.IsHasCardBefore;
             public const string IsCardOwnedByAccount = CardApplicationValidationQ.IsCardOwnedByAccount;
             public const string IsBalanceSufficient = CardApplicationValidationQ.IsBalanceSufficient;
             public const string HasActiveCardOfType = CardApplicationValidationQ.HasActiveCardOfType;

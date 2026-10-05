@@ -23,16 +23,38 @@ namespace Repositories.Validations
         public async Task<List<string>> ValidateAsync(ICardApplicationValidation dto, int? id = null)
         {
             var errors = new List<string>();
-
+            
             // Run all validation methods and aggregate errors
             if (!dto.oldCardId.HasValue)
             {
-                errors.AddRange(await IsBalanceSufficient(dto));
+                errors.AddRange(await IsHasCardBefore(dto));
+
+                if(errors.Count == 0) 
+
+                    errors.AddRange(await IsBalanceSufficient(dto));
 
             }
             else
                 errors.AddRange(await IsCardForAccount(dto));
 
+
+            return errors;
+        }
+        private async Task<List<string>> IsHasCardBefore(ICardApplicationValidation entity)
+        {
+            var errors = new List<string>();
+            var connection = await base.GetConnectionAsync();
+            await base.BeginTransactionAsync();
+            bool isValid = await connection.ExecuteScalarAsync<bool>(
+                QueryValidtion.CardApplicationValidtion.IsHasCardBefore,
+                new {  AccountId = entity.AccountID }
+            , base.CurrentTransaction);
+
+            if (isValid)
+            {
+                errors.Add("The account has card before you can not using this app only " +
+                    "for isuue card for first time.");
+            }
 
             return errors;
         }
