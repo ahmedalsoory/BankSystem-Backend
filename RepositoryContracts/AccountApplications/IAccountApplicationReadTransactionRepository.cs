@@ -8,6 +8,6 @@ namespace RepositoryContracts.AccountApplications
 {
     public interface IAccountApplicationReadTransactionRepository
     {
-        Task<byte> GetApplicationTypeByIdAsync(int id);
+        Task<byte?> GetApplicationTypeByIdAsync(int id);
     }
 }

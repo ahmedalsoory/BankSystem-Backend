@@ -45,10 +45,15 @@ namespace Service.Orchestrators.AccountApplication
             }
             if (request.NewStatus != ApplicationStatus.Approved) return OperationResult.Ok();
            
-            ApplicationType type =
+            ApplicationType? type =
                 await _accountApplicationReadTransactionService.GetApplicationTypeByIdAsync(request.ApplicationId);
 
-            
+            if (!type.HasValue)
+            {
+                return OperationResult.Failure($"Account application with ID {request.ApplicationId} was not found.");
+            }
+
+
             switch (type)
             {
                

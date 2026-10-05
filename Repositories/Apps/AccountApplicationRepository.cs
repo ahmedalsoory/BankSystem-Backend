@@ -52,18 +52,18 @@ namespace Repositories.Apps
               await conn.QueryFirstOrDefaultAsync<AccountApplicationResponse>(
                   Query.AccountApplication.GetById, new { id }));
         }
-        public async Task<byte> GetApplicationTypeByIdAsync(int id)
+        public async Task<byte?> GetApplicationTypeByIdAsync(int id)
         {
             base.SetAction();
             var connection = await base.GetConnectionAsync();
             await base.BeginTransactionAsync();
 
-            var applicationTypeId = await connection.QuerySingleAsync<byte>(
-        Query.AccountApplication.GetApplicationTypeByIdAsync,
-        new { ApplicationID = id },
-        transaction: base.CurrentTransaction
-    );
-            
+            var applicationTypeId = await connection.QuerySingleOrDefaultAsync<byte?>(
+                Query.AccountApplication.GetApplicationTypeByIdAsync,
+                new { ApplicationID = id },
+                transaction: base.CurrentTransaction
+            );
+
             return applicationTypeId;
         }
 
