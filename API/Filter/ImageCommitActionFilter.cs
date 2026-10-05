@@ -27,7 +27,7 @@ namespace API.Filter
             // 1. Execute the controller action
             var resultContext = await next();
 
-            // 2. Check if the operation was successful
+            // 2. Check if the operation was successful using ResponseHelper
             if (ResponseHelper.IsSuccessResponse(resultContext))
             {
                 // 🎉 SUCCESS: Safely delete old replaced images from disk
@@ -54,5 +54,5 @@ namespace API.Filter
                 }
             }
         }
-    } 
+    }
 }

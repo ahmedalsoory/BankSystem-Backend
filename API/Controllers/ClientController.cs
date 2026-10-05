@@ -57,19 +57,21 @@ namespace API.Controllers
 
         [HttpPost("create")]
         [Consumes("multipart/form-data")]
+        [ImageCommit]
         public async Task<ActionResult<OperationResult<int>>> CreateAsync(
     [FromForm] ClientAddRequest registerClientRequest, // ASP.NET Core will bind flat or properly named fields
     IFormFile? profileImage)
         {
           
             OperationResult<int> result = await _clientWriteService.CreateAsync(registerClientRequest
-                , profileImage).ConfigureAwait(false); ;
+                , profileImage).ConfigureAwait(false); 
 
             if (result.Success) return Ok(result);
             return BadRequest(result);
         }
         [HttpPut("update")]
         [Consumes("multipart/form-data")]
+        [ImageCommit]
         public async Task<ActionResult<OperationResult>> UpdateAsync(
         [FromForm] ClientUpdateRequest registerClientRequest,
         IFormFile? profileImage)
