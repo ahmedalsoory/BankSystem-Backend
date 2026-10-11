@@ -10,6 +10,7 @@ namespace Repositories.Queries
     {
         public const string Add = @"
                 INSERT INTO Apps.AccountOpeningDetails (ApplicationID, RequirementKey, RequirementValue)
+                OUTPUT INSERTED.DetailID 
                 VALUES (@ApplicationID, @RequirementKey, @RequirementValue);";
 
         public const string GetByApplicationId = @"

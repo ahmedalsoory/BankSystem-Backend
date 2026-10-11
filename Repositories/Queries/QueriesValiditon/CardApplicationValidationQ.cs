@@ -9,6 +9,11 @@ namespace Repositories.Queries.QueriesValiditon
     public static class CardApplicationValidationQ
     {
 
+
+        public const string IsHasCardBefore = @"
+select f=1 from Banking.Cards 
+where AccountID = @AccountId";
+
         public const string IsCardOwnedByAccount = @"
    SELECT CASE WHEN EXISTS (
     SELECT 1 

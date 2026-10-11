@@ -10,9 +10,9 @@ namespace Repositories.Queries
     {
         public const string AddApplication = @"
                 INSERT INTO Apps.AccountOpeningApplications 
-               (ClientID, OnboardingTypeID, Status, CreatedByUserID, CreatedDate, AccountType)
+               (ClientID, OnboardingTypeID, Status, CreatedByUserID, CreatedDate, AccountType,InitialDeposit)
                 OUTPUT INSERTED.ApplicationID 
-                VALUES (@ClientID, @OnboardingTypeID, 1, @CreatedByUserID, GETDATE(), @AccountType);";
+                VALUES (@ClientID, @OnboardingTypeID, 1, @CreatedByUserID, GETDATE(), @AccountType,@InitialDeposit);";
 
         public const string GetByID = @"SELECT ApplicationID, ClientID, OnboardingTypeID, Status, CreatedDate, CreatedByUserID, Notes, AccountType, Currency, InitialDeposit
                                     FROM     Apps.AccountOpeningApplications

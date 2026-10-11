@@ -1,9 +1,10 @@
 ﻿using Shared;
 using Shared.Exceptions;
 using Shared.Interfaces;
+using ServiceContract; // 🚀 Added to bring in IPerformanceAlertService
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Data.SqlClient; // 🚀 Added to parse native SQL Server exception codes
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,15 +15,15 @@ namespace API.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
- 
+
         public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context, Context errorContext
-           )
+        // 🚀 Added IPerformanceAlertService via method injection (ideal for scoped/transient services in middleware)
+        public async Task InvokeAsync(HttpContext context, Context errorContext, IPerformanceAlertService alertService)
         {
             try
             {
@@ -30,9 +31,6 @@ namespace API.Middleware
             }
             catch (Exception ex)
             {
-                // Ensure any active locks or transactions are instantly terminated/rolled back
-    
-
                 string sourceAction = errorContext.CurrentAction ?? "Unknown.Source";
 
                 _logger.LogError(ex,
@@ -42,23 +40,46 @@ namespace API.Middleware
                     context.TraceIdentifier,
                     context.User?.FindFirst("sub")?.Value ?? "Anonymous");
 
+                // 🚀 Determine if this exception warrants a Telegram alert (e.g., Server Errors / 500s)
+                // We typically skip alerting for routine client validation or not found exceptions.
+                bool isServerOrUnexpectedError = !(ex is BusinessException || ex is NotFoundException || ex is UnauthorizedAccessException || ex is ConcurrencyException);
+
+                if (isServerOrUnexpectedError)
+                {
+                    // Offload to background ThreadPool so user response latency is unaffected
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            string errorDetails =
+                                $"• *Path:* `{context.Request.Method} {context.Request.Path}`\n" +
+                                $"• *Action:* `{sourceAction}`\n" +
+                                $"• *Exception:* `{ex.GetType().Name}`\n" +
+                                $"• *Message:* `{ex.Message}`\n" +
+                                $"• *TraceId:* `{context.TraceIdentifier}`";
+
+                            await alertService.SendErrorAlertAsync("🚨 Unhandled Server Exception!", errorDetails);
+                        }
+                        catch (Exception alertEx)
+                        {
+                            _logger.LogError(alertEx, "Failed to send error alert to Telegram.");
+                        }
+                    });
+                }
+
                 await HandleExceptionAsync(context, ex);
             }
         }
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-
             if (context.Response.HasStarted)
             {
-                // If headers are already sent, we cannot change content type or status code.
-                // We must log and let the request finish.
                 return Task.CompletedTask;
             }
 
             context.Response.ContentType = "application/json";
 
-            // 🚀 CRITICAL UPDATE: Extract information if the exception is a native SQL Server Engine error
             SqlException? sqlException = FindSqlException(exception);
 
             int statusCode;
@@ -66,17 +87,13 @@ namespace API.Middleware
             string errorCode = "SERVER_ERROR";
             List<string>? errorList = null;
 
-            // 1. Process Database-Level Relational Constraint Rejections First
             if (sqlException != null && sqlException.Number == 547)
             {
-                // 🛡️ Error 547 = Foreign Key / Check Constraint Violation.
-                // This intercepts the database-level rejection of a missing Client ID or invalid reference data.
                 statusCode = 400;
                 errorCode = "VALIDATION_ERROR";
                 message = "Validation Failed: The provided reference data or Client ID does not exist in the system.";
                 errorList = new List<string> { "The parent entity relationship could not be verified on the server database constraint." };
             }
-            // 2. Fall back to your standard application-level exception matching patterns
             else
             {
                 (statusCode, message) = exception switch
@@ -101,7 +118,6 @@ namespace API.Middleware
 
             context.Response.StatusCode = statusCode;
 
-            // 3. Construct the unified payload response contract for your React frontend layout dashboard
             return context.Response.WriteAsJsonAsync(new
             {
                 StatusCode = statusCode,
@@ -112,10 +128,6 @@ namespace API.Middleware
             });
         }
 
-        /// <summary>
-        /// Helper function to unpack exceptions to find an underlying SqlException.
-        /// Useful if Dapper wraps a database exception inside an AggregateException or TargetInvocationException.
-        /// </summary>
         private static SqlException? FindSqlException(Exception? ex)
         {
             while (ex != null)

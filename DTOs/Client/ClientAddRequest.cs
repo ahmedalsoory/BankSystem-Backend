@@ -14,8 +14,8 @@ namespace DTOs.Client
 
     public class ClientAddRequest:PersonAddRequest
     {
-        public byte RiskLevel { get; init; }
-        public bool IsActive { get; init; }
+        public byte RiskLevel { get; set; }
+        public bool IsActive { get; set; }
 
         public string? ClientNumber { get; set; }
         public int? PersonID { get;  set; }

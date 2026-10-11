@@ -62,7 +62,8 @@ namespace Repositories.Apps
                         request.ClientID,
                         request.OnboardingTypeID,
                         request.CreatedByUserID,
-                        request.AccountType
+                        request.AccountType,
+                        request.InitialDeposit
                     },
                     CurrentTransaction);
                 if (appId>0)

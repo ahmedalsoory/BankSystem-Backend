@@ -47,12 +47,12 @@ namespace Service.Apps
 
 
 
-        public async Task<OperationResult> AddDetailAsync(AccountOpeningDetailRequest request)
+        public async Task<OperationResult<int>> AddDetailAsync(AccountOpeningDetailRequest request)
         {
             List<string> errors = await _validationService.ValidateAsync(request);
             if (errors.Any())
             {
-                return OperationResult.Failure(errors);
+                return OperationResult<int>.Failure(errors);
             }
 
             return await ExecuteDbOperationAsync(() => _write.AddDetailAsync(request

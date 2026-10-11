@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp; // Added for Image.Load
+using SixLabors.ImageSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,40 +34,38 @@ namespace Shared.Image
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!_allowedExtensions.Contains(extension))
                 return OperationResult<string>.Failure("Invalid file extension. Allowed types: .jpg, .jpeg, .png, .webp.");
-            
+
             try
             {
-                // **Advanced Security Check:** 
-                // Open a stream and attempt to fully decode the image pixels. 
-                // This stops attackers using fake extensions, hex spoofing, or corrupted data payloads.
-                using (var imageStream = file.OpenReadStream())
-                {
-                    try
-                    {
-                        // ImageSharp reads and parses the pixel structure safely.
-                        // If it's not a real decodable image, it throws an exception.
-                        using var image = SixLabors.ImageSharp.Image.Load(imageStream);
-                    }
-                    catch
-                    {
-                        return OperationResult<string>.Failure("The uploaded file is not a valid, decodable image.");
-                    }
-                }
-
                 var uniqueFileName = $"{Guid.NewGuid()}{extension}";
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", folderName);
                 Directory.CreateDirectory(uploadsFolder);
 
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
+
+                // SINGLE PASS: Validate pixels in RAM and write directly to destination in one stream pass
+                using (var imageStream = file.OpenReadStream())
                 {
-                    await file.CopyToAsync(stream);
+                    using var image = await SixLabors.ImageSharp.Image.LoadAsync(imageStream);
+
+                    // Saves the re-encoded image directly to disk (strips malicious EXIF metadata)
+                    await image.SaveAsync(filePath);
                 }
 
                 var savedPath = $"/images/{folderName}/{uniqueFileName}";
                 _imageTracker.TrackNewImage(savedPath);
 
                 return OperationResult<string>.Ok(savedPath);
+            }
+            catch (UnknownImageFormatException)
+            {
+                // Thrown by ImageSharp when the file header or payload isn't a valid image
+                return OperationResult<string>.Failure("The uploaded file is not a valid, decodable image.");
+            }
+            catch (InvalidImageContentException)
+            {
+                // Thrown by ImageSharp on corrupted or spoofed image streams
+                return OperationResult<string>.Failure("The uploaded file contains corrupted or invalid image data.");
             }
             catch (Exception ex)
             {

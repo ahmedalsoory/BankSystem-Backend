@@ -38,12 +38,12 @@ namespace Repositories.Validations
         {
             base.SetAction();
             var connection = await base.GetConnectionAsync();
-
+            await base.BeginTransactionAsync();
             // HUP Execution: Use externalized query string with explicit transaction: null
             int count = await connection.ExecuteScalarAsync<int>(
                 QueryValidtion.AccountOpeningDetailValidation.CheckActiveDetail,
                 request,
-                transaction: null // Guarantees this read is independent of the main transaction pipe
+                transaction: base.CurrentTransaction // Guarantees this read is independent of the main transaction pipe
             );
 
             return count > 0

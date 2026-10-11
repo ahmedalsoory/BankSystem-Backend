@@ -50,9 +50,11 @@ namespace Service.Apps
         // READ SERVICE OPERATIONS
         // =========================================================================
 
-        public async Task<ApplicationType> GetApplicationTypeByIdAsync(int id)
+        public async Task<ApplicationType?> GetApplicationTypeByIdAsync(int id)
         {
-            return (ApplicationType)await _readTransactionRepo.GetApplicationTypeByIdAsync(id);
+            var typeId = await _readTransactionRepo.GetApplicationTypeByIdAsync(id);
+
+            return typeId.HasValue ? (ApplicationType)typeId.Value : null;
         }
 
         public async Task<AccountApplicationResponse?> GetByIdAsync(int id)

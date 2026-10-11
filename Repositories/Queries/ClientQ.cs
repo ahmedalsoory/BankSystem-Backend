@@ -9,9 +9,13 @@ namespace Repositories.Queries
     public static class ClientQ
     {
         public const string GetByAccountNumber = @"
-                SELECT Id, ClientNumber, RiskLevel, IsActive, RowVersion
-                FROM Core.Clients 
-                WHERE ClientNumber = @accountNumber";
+             SELECT c.PersonId, p.FirstName, p.LastName, p.Phone, p.Email, p.BirthDate,
+                    p.Gendor, p.ImagePath, p.NationalId, c.ClientNumber, c.IsActive, 
+                    c.RiskLevel, c.JoinedDate, c.RowVersion as ClientVersion, 
+                    p.RowVersion as PersonVersion
+             FROM Core.Persons p 
+             INNER JOIN Core.Clients c ON c.PersonId = p.id
+             WHERE c.ClientNumber = @accountNumber";
 
         public const string GetByPersonId = @"
                 SELECT c.PersonId, p.FirstName, p.LastName, p.Phone, p.Email, p.BirthDate,
