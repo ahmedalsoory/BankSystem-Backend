@@ -27,18 +27,7 @@ namespace API.Controllers
         }
 
 
-        [HttpPost("create")]
-        public async Task<ActionResult<OperationResult>> CreateAsync([FromBody] AccountAddRequest request
-           )
-            {
-                OperationResult result =  await accountWrite.AddAsync(request).ConfigureAwait(false);
-
-            if(result.Success)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
+      
 
         [HttpGet("id/{Id}")]
 
