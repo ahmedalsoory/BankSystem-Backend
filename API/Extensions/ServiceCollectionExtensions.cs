@@ -16,7 +16,6 @@ using Service.Validation;
 using Service.Validation.Account;
 using ServiceContract;
 using Shared;
-using Shared.Cache;
 using Shared.Image;
 using Shared.Interfaces;
 namespace API.Extensions

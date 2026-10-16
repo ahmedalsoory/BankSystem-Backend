@@ -18,7 +18,6 @@ using Shared.Enums;
 using Shared.Enums.Transaction;
 using DTOs.interfaces;
 using DTOs.Account.interfaces;
-using Shared.Exceptions;
 using Repositories.Queries;
 
 namespace Repositories.Banking

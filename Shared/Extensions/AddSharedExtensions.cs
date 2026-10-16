@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Shared.Cache;
 using Shared.Image;
 using Shared.Interfaces;
 using System;

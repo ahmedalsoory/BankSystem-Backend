@@ -12,7 +12,6 @@ using RepositoryContracts.AccountWorkflowRepository;
 using RepositoryContracts.AccountOpeningApplications;
 using DTOs.interfaces;
 using DTOs.AccountOpeningApplication.interfaces;
-using Shared.Exceptions;
 using DTOs.AccountOpeningWorkflow;
 using Microsoft.Data.SqlClient;
 using Repositories.Queries;

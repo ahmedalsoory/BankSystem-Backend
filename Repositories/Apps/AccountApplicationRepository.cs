@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using Azure.Core;
 using DTOs.AccountApplications.interfaces;
 using DTOs.interfaces;
-using Shared.Exceptions;
 using Repositories.Queries;
 
 namespace Repositories.Apps

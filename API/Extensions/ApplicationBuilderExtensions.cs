@@ -25,7 +25,6 @@ namespace API.Extensions
             app.UseStaticFiles();
 
             app.UseCors();
-            app.UseMiddleware<ProtocolCheckMiddleware>();
             app.UseMiddleware<ExceptionMiddleware>();
 
             if (env.IsDevelopment())

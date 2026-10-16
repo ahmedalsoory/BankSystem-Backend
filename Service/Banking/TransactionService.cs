@@ -9,7 +9,6 @@ using RepositoryContracts.Transaction;
 using ServiceContract.CSVExportService;
 using ServiceContract.Transaction;
 using Shared;
-using Shared.Cache;
 using Shared.Enums;
 using Shared.Enums.Transaction;
 using System;

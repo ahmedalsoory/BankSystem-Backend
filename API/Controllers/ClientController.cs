@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ServiceContract.Client;
 using Shared.Enums.Client;
-using API.Validation;
 using DTOs.Person.interfaces;
 
 using Shared.Enums;

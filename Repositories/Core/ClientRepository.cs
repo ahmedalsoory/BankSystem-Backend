@@ -16,7 +16,6 @@ using RepositoryContracts.PersonRepo;
 using Shared;
 using Shared.Enums;
 using Shared.Enums.Client;
-using Shared.Exceptions;
 using Shared.Interfaces;
 using System;
 using System.Data;
