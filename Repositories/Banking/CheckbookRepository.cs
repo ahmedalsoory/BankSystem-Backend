@@ -10,10 +10,12 @@ using Dapper;
 using Shared.Enums.Checkbook;
 using Repositories.Queries;
 using RepositoryContracts.Checkbook;
+using DTOs.CheckbookApplications;
 
 namespace Repositories.Banking
 {
-    public class CheckbookRepository :BaseRepository , ICheckbookWriteRepository
+    public class CheckbookRepository :BaseRepository , ICheckbookWriteRepository,
+        ICheckbookReadTransactionRepository
     {
         public CheckbookRepository(IDbContextScope dbContextScope, Context error
            , IAuditTracker auditTracker) : base(dbContextScope, error, auditTracker)
@@ -55,6 +57,67 @@ namespace Repositories.Banking
 
         }
 
+        public async Task<CheckbookApplicationDetails> GetDetailsForIssueFirstTime(int applicationId)
+        {
+            base.SetAction();
+            var connection = await base.GetConnectionAsync();
+            await base.BeginTransactionAsync();
+           
 
+            var result = await connection.QueryFirstOrDefaultAsync<CheckbookApplicationDetails>(
+                Query.Checkbook.GetDetailsForIssueFirstTime,
+                new { ApplicationID = applicationId },transaction:base.CurrentTransaction
+            );
+
+            return result;
+        }
+    
+
+        public async  Task<CheckbookApplicationDetails> GetDetailsForReplacementOrRenew(int applicationId)
+        {
+            base.SetAction();
+            var connection = await base.GetConnectionAsync();
+            await base.BeginTransactionAsync();
+
+            var result = await connection.QueryFirstOrDefaultAsync<CheckbookApplicationDetails>(
+                Query.Checkbook.GetDetailsForReplacementOrRenew,
+                new { ApplicationID = applicationId }, transaction: base.CurrentTransaction
+            );
+
+            return result;
+        }
+    
+
+        public async Task<OperationResult> UpdateStatus(int id, CheckbookStatus newStatus)
+        {
+            base.SetAction();
+            var connection = await base.GetConnectionAsync();
+            await base.BeginTransactionAsync();
+            int rowsAffected = await connection.ExecuteAsync(
+                Query.Checkbook.UpdateStatus,
+                new
+                {
+                    CheckbookID = id,
+                    Status = (byte)newStatus
+                },
+                base.CurrentTransaction
+            );
+
+            if (rowsAffected == 0)
+            {
+                return OperationResult.Failure("Checkbook record not found or status update failed.");
+            }
+
+            _auditTracker?.AddEntry(
+                tableName: "Checkbooks",
+                recordId: id.ToString(),
+                operationType: "Update",
+                userId: "2"
+            );
+
+            return OperationResult.Ok();
+        }
+
+   
     }
 }

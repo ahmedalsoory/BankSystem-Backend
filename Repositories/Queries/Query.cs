@@ -114,11 +114,20 @@ namespace Repositories.Queries
             public const string InsertReplaceApplication = CheckbookApplicationQ.InsertReplaceApplication;
             public const string InsertRenewApplication = CheckbookApplicationQ.InsertRenewApplication;
             public const string GetDataForAddCheckbook = CheckbookApplicationQ.GetDataForAddCheckbook;
+            public const string GetCheckbookIdByApplicationIdAsync = CheckbookApplicationQ.GetCheckbookIdByApplicationIdAsync;
         }
         public static class Checkbook
         {
             public const string Insert = CheckbookQ.Insert;
             public const string getLastCheck = CheckbookQ.getLastCheck;
+            public const string GetDetailsForIssueFirstTime = CheckbookQ.GetDetailsForIssueFirstTime;
+            public const string GetDetailsForReplacementOrRenew = CheckbookQ.GetDetailsForReplacementOrRenew;
+            public const string UpdateStatus = CheckbookQ.UpdateStatus;
+        }
+        public static class CheckLeaves
+        {
+            public const string AddRangeAsync = CheckLeavesQ.AddRangeAsync;
+            public const string DisableUnusedLeavesAsync  = CheckLeavesQ.DisableUnusedLeavesAsync;
         }
     }
 }

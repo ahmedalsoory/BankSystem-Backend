@@ -10,6 +10,9 @@ namespace ServiceContract.Checkbook
 {
     public interface ICheckbookWriteService
     {
-        Task<OperationResult<int>> Add(CheckbookAddRequest request);
+        Task<OperationResult<int>> IssueCheckbookAsync(int applicationId);
+        Task<OperationResult<int>> ReplaceCheckbookAsync(int oldCheckbookId, int applicationId);
+        Task<OperationResult<int>> RenewCheckbookAsync(int oldCheckbookId, int applicationId);
+
     }
 }

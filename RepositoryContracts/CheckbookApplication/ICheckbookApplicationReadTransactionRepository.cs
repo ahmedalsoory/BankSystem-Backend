@@ -10,5 +10,6 @@ namespace RepositoryContracts.CheckbookApplication
     public interface ICheckbookApplicationReadTransactionRepository
     {
         Task<CheckbookDataForAddCheckbook> GetDataForAddCheckbook(int ApplicationID);
+        Task<int?> GetCheckIdByApplicationIdAsync(int ApplicationID);
     }
 }

@@ -64,5 +64,10 @@ aa.AccountID
 from Apps.CheckbookApplications cb
 inner join Apps.AccountApplications aa on cb.ApplicationID = aa.ApplicationID
 where aa.ApplicationID=@ApplicationID";
+
+        public const string GetCheckbookIdByApplicationIdAsync = @"
+select OldCheckbookID from Apps.CheckbookApplications
+where ApplicationID = @ApplicationID";
+
     }
 }

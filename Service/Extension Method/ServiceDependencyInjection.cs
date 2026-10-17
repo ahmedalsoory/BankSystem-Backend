@@ -35,6 +35,7 @@ using ServiceContract.Card;
 using ServiceContract.CardApplication;
 using ServiceContract.Checkbook;
 using ServiceContract.CheckbookApplication;
+using ServiceContract.CheckLeaves;
 using ServiceContract.Client;
 using ServiceContract.CSVExportService;
 using ServiceContract.Dashboard;
@@ -106,6 +107,8 @@ namespace Service.Extension_Method
             services.AddScoped<ICardApplicationWriteService, CardApplicationService>();
             services.AddScoped<ICSVExportService, CSVExportService>();
             services.AddScoped<ICheckbookWriteService, CheckbookService>();
+            services.AddScoped<ICheckLeavesWriteService, CheckLeavesService>();
+
             //CheckbookService :BaseService<CheckbookService> ,ICheckbookWriteService
 
             // --- Multi-Contract Services (Explicitly Forwarded to Share the Same Instance) ---

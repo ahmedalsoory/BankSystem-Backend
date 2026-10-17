@@ -26,6 +26,7 @@ using RepositoryContracts.Card;
 using RepositoryContracts.CardApplication;
 using RepositoryContracts.Checkbook;
 using RepositoryContracts.CheckbookApplication;
+using RepositoryContracts.CheckLeaves;
 using RepositoryContracts.ClientRepo;
 using RepositoryContracts.DashboardRepo;
 using RepositoryContracts.ExportRepository;
@@ -70,6 +71,7 @@ namespace Repositories.Extensions
         public static IServiceCollection AddBankRepositories(this IServiceCollection services)
         {
             // --- Single Contract Repositories ---
+
             services.AddScoped<IDashboardRepository, DashboardRepository>();
             services.AddScoped<IAccountProductsReadTransactionalRepository, AccountProductsRepository>();
             services.AddScoped<IOnboardingTypeStepsReadRepository, OnboardingTypeStepsRepository>();
@@ -77,9 +79,13 @@ namespace Repositories.Extensions
             services.AddScoped<IApplicationWorkflowStepReadRepository, ApplicationWorkflowStepRepository>();
             services.AddScoped<ICardApplicationWriteRepository, CardApplicationRepository>();
             services.AddScoped<IExportRepository, ExportRepository>();
+            services.AddScoped<ICheckLeavesWriteRepository, CheckLeavesRepository>();
 
 
             // --- Multi-Contract Repositories (Explicitly Forwarded to Share the Same Instance) ---
+
+
+
 
             services.AddScoped<CheckbookApplicationRepository>();
             services.AddScoped<ICheckbookApplicationWriteRepository>(sp => sp.GetRequiredService<CheckbookApplicationRepository>());
@@ -142,6 +148,7 @@ namespace Repositories.Extensions
             // CardRepository
             services.AddScoped<CheckbookRepository>();
             services.AddScoped<ICheckbookWriteRepository>(sp => sp.GetRequiredService<CheckbookRepository>());
+            services.AddScoped<ICheckbookReadTransactionRepository>(sp => sp.GetRequiredService<CheckbookRepository>());
 
 
             // --- Validation Repositories ---

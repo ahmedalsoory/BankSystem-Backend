@@ -117,5 +117,19 @@ namespace Repositories.Apps
 
             return OperationResult<int>.Ok(newId);
         }
+
+        public async Task<int?> GetCheckIdByApplicationIdAsync(int ApplicationID)
+        {
+            SetAction();
+            var connection = await GetConnectionAsync();
+            await BeginTransactionAsync();
+
+            return await connection.QuerySingleAsync<int>(
+            Query.CheckbookApplication.GetCheckbookIdByApplicationIdAsync,
+            new { ApplicationID },
+            transaction: base.CurrentTransaction
+        );
+           
+        }
     }
 }

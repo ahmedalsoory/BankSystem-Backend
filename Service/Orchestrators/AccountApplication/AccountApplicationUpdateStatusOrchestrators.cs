@@ -1,8 +1,10 @@
 ﻿using DTOs.AccountApplications;
 using RepositoryContracts.AccountApplications;
+using RepositoryContracts.CheckbookApplication;
 using ServiceContract.Applications;
 using ServiceContract.Applications.Orchestrators;
 using ServiceContract.Card;
+using ServiceContract.Checkbook;
 using Shared;
 using Shared.Enums.AccountApplications;
 using Shared.Enums.AccountApplicationsType;
@@ -23,15 +25,25 @@ namespace Service.Orchestrators.AccountApplication
             _accountApplicationReadTransactionService;
 
         private readonly ICardReadTransactionService _cardReadTransactionService;
+
+        private readonly ICheckbookWriteService _checkbookWriteService;
+        private readonly ICheckbookApplicationReadTransactionRepository 
+            _checkbookApplicationReadTransactionRepository;
         public AccountApplicationUpdateStatusOrchestrators(IAccountApplicationWriteService
             accountApplicationWriteService, ICardWriteService cardWriteService,
             IAccountApplicationReadTransactionService 
-            accountApplicationReadTransactionService, ICardReadTransactionService cardReadTransactionService)
+            accountApplicationReadTransactionService, 
+            ICardReadTransactionService cardReadTransactionService
+            , ICheckbookWriteService checkbookWriteService,
+            ICheckbookApplicationReadTransactionRepository
+            checkbookApplicationReadTransactionRepository)
         {
             _accountApplicationWriteService = accountApplicationWriteService;
             _cardWriteService = cardWriteService;
             _accountApplicationReadTransactionService = accountApplicationReadTransactionService;
             _cardReadTransactionService = cardReadTransactionService;
+            _checkbookWriteService = checkbookWriteService;
+            _checkbookApplicationReadTransactionRepository = checkbookApplicationReadTransactionRepository;
         }
 
         public async Task<OperationResult>UpdateStatus(AccountApplicationStatusUpdateRequest
@@ -88,11 +100,36 @@ namespace Service.Orchestrators.AccountApplication
                 case ApplicationType.LoanRequest:
                     break;
                 case ApplicationType.IssueCheckbook:
+                
+                    OperationResult<int> issueCheckResult = 
+                        await _checkbookWriteService.IssueCheckbookAsync(request.ApplicationId);
+                    if (!issueCheckResult.Success)
+                    {
+                        return OperationResult.Failure(issueCheckResult.Errors);
+                    }
                     break;
 
                 case ApplicationType.ReplaceCheckbook:
+                    int? oldIdForReplaceCheck = await _checkbookApplicationReadTransactionRepository.GetCheckIdByApplicationIdAsync(
+                    request.ApplicationId);
+                    OperationResult<int> ReplaceCheckResult =
+                        await _checkbookWriteService.ReplaceCheckbookAsync(oldIdForReplaceCheck.Value,request.ApplicationId);
+                    if (!ReplaceCheckResult.Success)
+                    {
+                        return OperationResult.Failure(ReplaceCheckResult.Errors);
+                    }
                     break;
                 case ApplicationType.RenewCheckbook:
+                    int? oldIdForRenewCheck = await _checkbookApplicationReadTransactionRepository.GetCheckIdByApplicationIdAsync(
+                    request.ApplicationId);
+
+                    OperationResult<int> RenewCheckResult =
+                      await _checkbookWriteService.RenewCheckbookAsync(oldIdForRenewCheck.Value,
+                      request.ApplicationId);
+                    if (!RenewCheckResult.Success)
+                    {
+                        return OperationResult.Failure(RenewCheckResult.Errors);
+                    }
                     break;
                 default:
                     return OperationResult.Failure("Unkown Application type");
