@@ -14,7 +14,6 @@ namespace API.Controllers
     public class AccountApplicationsController : MyControllerBase
     {
         private readonly IAccountApplicationReadService _readService;
-        private readonly IAccountApplicationWriteService _writeService;
         private readonly IAccountApplicationUpdateStatusOrchestrators _accountApplicationUpdateStatus;
         private readonly IAccountApplicationAddNewApplicationOrchestrators 
             _accountApplicationAddNewApplicationOrchestrators;
@@ -26,7 +25,7 @@ namespace API.Controllers
             IAccountApplicationAddNewApplicationOrchestrators accountApplicationAddNewApplicationOrchestrators) : base(loggerFactory)
         {
             _readService = readService;
-            _writeService = writeService;
+        
             _accountApplicationUpdateStatus = accountApplicationUpdateStatus;
             _accountApplicationAddNewApplicationOrchestrators = accountApplicationAddNewApplicationOrchestrators;
         }
@@ -93,25 +92,5 @@ namespace API.Controllers
             
         }
 
-
-        [HttpPost("create")]
-     //   [ServiceFilter(typeof(GlobalValidationFilter<AccountApplicationAddRequest, IAccountApplicationValidationDTO>))]
-        public async Task<ActionResult<OperationResult>> CreateAsync(AccountApplicationAddRequest request)
-        {
-            // 100% clean of validation logic! 
-            // Tier 1 and Tier 3 validation run entirely inside the GlobalValidationFilter before this line hits.
-
-            OperationResult result = await 
-                _accountApplicationAddNewApplicationOrchestrators.
-                AddApplicationProssese(request).ConfigureAwait(false); ;
-
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-            else return BadRequest(result);
-
-
-        }
     }
 }
