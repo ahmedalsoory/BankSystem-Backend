@@ -15,19 +15,17 @@ namespace API.Controllers
     {
         private readonly IAccountApplicationReadService _readService;
         private readonly IAccountApplicationUpdateStatusOrchestrators _accountApplicationUpdateStatus;
-        private readonly IAccountApplicationAddNewApplicationOrchestrators 
-            _accountApplicationAddNewApplicationOrchestrators;
+
         public AccountApplicationsController(
             ILoggerFactory loggerFactory,
             IAccountApplicationReadService readService,
-            IAccountApplicationWriteService writeService,
-            IAccountApplicationUpdateStatusOrchestrators accountApplicationUpdateStatus,
-            IAccountApplicationAddNewApplicationOrchestrators accountApplicationAddNewApplicationOrchestrators) : base(loggerFactory)
+            IAccountApplicationUpdateStatusOrchestrators accountApplicationUpdateStatus
+          ) : base(loggerFactory)
         {
             _readService = readService;
         
             _accountApplicationUpdateStatus = accountApplicationUpdateStatus;
-            _accountApplicationAddNewApplicationOrchestrators = accountApplicationAddNewApplicationOrchestrators;
+           
         }
 
         /// <summary>
