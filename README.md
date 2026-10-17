@@ -29,6 +29,7 @@ The project is structured as a multi-project solution with explicit contracts be
   - [Exception Handling](#exception-handling)
   - [Database Access and Query Organization](#database-access-and-query-organization)
   - [Advanced Performance & Database Optimization](#advanced-performance--database-optimization)
+  - [Concurrency Strategy & Trade-offs](#concurrency-strategy--trade-offs)
   - [Database Setup & Structure](#database-setup--structure)
 - [Banking Domains](#banking-domains)
 - [Testing](#testing)
@@ -503,6 +504,23 @@ To handle heavy database workloads and performance bottlenecks efficiently, the 
 * **Cached Count & Metadata Optimization:** Bypasses costly `COUNT(*)` execution plan costs by reusing client-side cached total counts or leveraging ultra-fast metadata partition statistics (`sys.dm_db_partition_stats`) when no custom filters are applied.
 * **Dynamic Parameterized Execution:** Secures all dynamic queries against SQL injection using `sp_executesql` while ensuring optimal query execution plans.
 * **Optimistic Concurrency & Security:** Implements `RowVersion` (`timestamp`) for safe concurrent updates and strict hashing for sensitive data like passwords, card numbers, and CVVs.
+
+---
+
+## Concurrency Strategy & Trade-offs
+
+In financial and banking systems, managing concurrent requests and race conditions is critical to prevent data corruption or violating business constraints. The backend employs clear strategies tailored to specific operational requirements:
+
+- **Unique Constraints as a First Line of Defense:** 
+  Database unique constraints are heavily relied upon for foundational checks (like validating unique emails or phone numbers) to prevent duplicates at the schema level while avoiding unnecessary locking.
+- **Pessimistic Range Locking:** 
+  For business rules enforcing strict limits (such as restricting a client to a maximum of 5 accounts), queries utilize `UPDLOCK` combined with `HOLDLOCK` to ensure concurrent requests cannot bypass account thresholds during simultaneous creations.
+- **Targeted Row Locking for Critical Operations:** 
+  In financial transactions (like purchases, deposits, and tax deductions), rejecting user requests due to concurrency conflicts is unacceptable. Precise row locking (`UPDLOCK`) secures balances within transactional boundaries without locking entire tables.
+- **Optimistic Concurrency for Low-Risk Updates:** 
+  For non-critical mutations like profile updates, `RowVersion` (`timestamp`) tracking is used. Conflicting updates can safely prompt the client to refresh, causing no financial friction.
+- **Transient Failure Resilience:** 
+  Integrated with Polly, the data-access layer automatically handles temporary deadlocks (SQL error `1205`) by safely retrying operations.
 
 ---
 
