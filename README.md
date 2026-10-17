@@ -28,6 +28,8 @@ The project is structured as a multi-project solution with explicit contracts be
   - [Performance Monitoring](#performance-monitoring)
   - [Exception Handling](#exception-handling)
   - [Database Access and Query Organization](#database-access-and-query-organization)
+  - [Advanced Performance & Database Optimization](#advanced-performance--database-optimization)
+  - [Database Setup & Structure](#database-setup--structure)
 - [Banking Domains](#banking-domains)
 - [Testing](#testing)
 - [Load Testing](#load-testing)
@@ -490,6 +492,26 @@ Query
 This keeps repository classes from becoming a collection of scattered SQL string literals.
 
 The database layer also includes specialized paging implementations and stored-procedure calls for larger result sets.
+
+---
+
+## Advanced Performance & Database Optimization
+
+To handle heavy database workloads and performance bottlenecks efficiently, the backend implements the following enterprise-level optimizations:
+
+* **Deferred Join & Seek-Based Pagination:** Utilizes CTEs to fetch primary keys first, eliminating expensive `Key Lookups` and maintaining constant response times even during deep pagination.
+* **Cached Count & Metadata Optimization:** Bypasses costly `COUNT(*)` execution plan costs by reusing client-side cached total counts or leveraging ultra-fast metadata partition statistics (`sys.dm_db_partition_stats`) when no custom filters are applied.
+* **Dynamic Parameterized Execution:** Secures all dynamic queries against SQL injection using `sp_executesql` while ensuring optimal query execution plans.
+* **Optimistic Concurrency & Security:** Implements `RowVersion` (`timestamp`) for safe concurrent updates and strict hashing for sensitive data like passwords, card numbers, and CVVs.
+
+---
+
+## Database Setup & Structure
+
+The repository includes a complete SQL schema script structured into specialized enterprise schemas (`Apps`, `Banking`, `Core`, `Loans`, `Ref`, `System`).
+
+1. Locate the master initialization script in `dbScript/001_InitialSchema.sql`.
+2. Run the script against your local **SQL Server** instance to set up the `BankSystemDB` database and optimized stored procedures.
 
 ---
 
