@@ -65,8 +65,4 @@ public abstract class BaseRepository
 
     protected IDbTransaction? CurrentTransaction => _dbScope.CurrentTransaction;
 
-    protected async Task<T?> ExecuteTransientAsync<T>(Func<IDbConnection, Task<T>> operation)
-    {
-        return await _dbScope.ExecuteTransientAsync(operation);
-    }
 }

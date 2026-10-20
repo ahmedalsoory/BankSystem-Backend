@@ -86,15 +86,14 @@ namespace Repositories.Apps
         public async Task<AccountOpeningApplicationResponse?> GetByIdAsync(int id)
         {
             SetAction();
-            // Uses the standardized HUP pattern
 
-            return await ExecuteTransientAsync(async connection =>
-            {
-                return await connection.QueryFirstOrDefaultAsync<AccountOpeningApplicationResponse?>(
+            using var connection = new SqlConnection(base._connectionString);
+            await connection.OpenAsync(base.CancellationToken);
+            return await connection.QueryFirstOrDefaultAsync<AccountOpeningApplicationResponse?>(
                     Query.AccountApplication.GetById,
                     new { id }
                 );
-            });
+            
 
         }
 

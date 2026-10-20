@@ -36,13 +36,14 @@ namespace Repositories.Banking
         public async Task<AccountResponse?> GetByIdAsync(int id)
         {
             SetAction();
-            return await ExecuteTransientAsync(async connection =>
-            {
-                return await connection.QueryFirstOrDefaultAsync<AccountResponse>(
+
+            using var connection = new SqlConnection(base._connectionString);
+            await connection.OpenAsync(base.CancellationToken);
+            return await connection.QueryFirstOrDefaultAsync<AccountResponse>(
                     Query.Account.GetById,
                     new { id }
                 );
-            });
+            
             //  return await base.ManualExecuteAsync<AccountResponse>(Query.Account.GetById, new { id });
         }
 
@@ -61,13 +62,13 @@ namespace Repositories.Banking
         {
             SetAction();
             //throw new Exception();
-            return await ExecuteTransientAsync(async connection =>
-            {
-                return await connection.QueryFirstOrDefaultAsync<AccountResponse>(
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            return await connection.QueryFirstOrDefaultAsync<AccountResponse>(
                     Query.Account.GetByNumber,
                     new { accountNumber }
                 );
-            });
+            
         }
 
         public async Task<IEnumerable<AccountListItem>> GetByClientIdAsync(int clientId)

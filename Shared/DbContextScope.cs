@@ -16,7 +16,7 @@ namespace Shared
     {
         private readonly string _connectionString;
         private readonly IAuditTracker _auditTracker;
-        private  IDbConnection? _connection;
+        private IDbConnection? _connection;
         private IDbTransaction? _transaction;
         private readonly IHttpContextAccessor _httpContextAccessor; // 2. Declare the accessor
 
@@ -162,64 +162,6 @@ namespace Shared
             }
         }
 
-        public async Task<T?> ExecuteTransientAsync<T>(Func<IDbConnection, Task<T>> operation)
-        {
-            var retryPolicy = Policy
-                .Handle<SqlException>(ex => IsTransient(ex))
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-
-            return await retryPolicy.ExecuteAsync(async () =>
-            {
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
-                    return await operation(connection);
-                }
-            });
-        }
-
-        public async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> operation)
-        {
-            var retryPolicy = Policy
-                .Handle<SqlException>(ex => IsTransient(ex))
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(50 * Math.Pow(2, retryAttempt - 1)));
-
-            return await retryPolicy.ExecuteAsync(async () =>
-            {
-                DisposeTransaction();
-                CloseConnection();
-
-                return await operation();
-            });
-        }
-
-        public async Task ExecuteWithRetryAsync(Func<Task> operation)
-        {
-            var retryPolicy = Policy
-                .Handle<SqlException>(ex => IsTransient(ex))
-                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromMilliseconds(50 * Math.Pow(2, retryAttempt - 1)));
-
-            await retryPolicy.ExecuteAsync(async () =>
-            {
-                DisposeTransaction();
-                CloseConnection();
-
-                await operation();
-            });
-        }
-
-        private bool IsTransient(SqlException ex)
-        {
-            switch (ex.Number)
-            {
-                case 1205: // Deadlock
-                case -2:   // Timeout
-                case 40613: // Database busy
-                case 40197: // Error processing request
-                    return true;
-                default:
-                    return false;
-            }
-        }
+    
     }
 }

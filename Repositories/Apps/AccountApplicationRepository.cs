@@ -46,10 +46,12 @@ namespace Repositories.Apps
         public async Task<AccountApplicationResponse?> GetByIdAsync(int id)
         {
             base.SetAction();
-            // Uses the standardized HUP pattern
-            return await ExecuteTransientAsync(async conn =>
-              await conn.QueryFirstOrDefaultAsync<AccountApplicationResponse>(
-                  Query.AccountApplication.GetById, new { id }));
+
+            using var connection = new SqlConnection(base._connectionString);
+            await connection.OpenAsync(base.CancellationToken);
+
+           return await connection.QueryFirstOrDefaultAsync<AccountApplicationResponse>(
+                  Query.AccountApplication.GetById, new { id });
         }
         public async Task<byte?> GetApplicationTypeByIdAsync(int id)
         {
@@ -166,24 +168,25 @@ namespace Repositories.Apps
             parameters.Add("@Value", filterValue, valueType, ParameterDirection.Input);
 
             // 3. Execute via ExecuteTransientAsync for automatic transient error / retry handling
-            var result = await ExecuteTransientAsync(async connection =>
-            {
-                using (var multi = await connection.QueryMultipleAsync(
-                    "dbo.sp_GetAccountApplicationsPaged",
-                    parameters,
-                    commandType: CommandType.StoredProcedure))
-                {
-                    int totalCount = await multi.ReadFirstAsync<int>();
-                    var data = (await multi.ReadAsync<AccountApplicationListItem>()).ToList();
 
-                    return new PagedResult<AccountApplicationListItem>
-                    {
-                        Data = data,
-                        TotalCount = totalCount
-                    };
-                }
-            });
-            return result;
+            using var connection = new SqlConnection(base._connectionString);
+            await connection.OpenAsync(base.CancellationToken);
+
+            using var multi = await connection.QueryMultipleAsync(
+                "dbo.sp_GetAccountApplicationsPaged",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            int totalCount = await multi.ReadFirstAsync<int>();
+            var data = (await multi.ReadAsync<AccountApplicationListItem>()).ToList();
+
+            return new PagedResult<AccountApplicationListItem>
+            {
+                Data = data,
+                TotalCount = totalCount
+            };
+
+            
         }
         private (string WhereClause, object? AccountId, object? FilterValue) BuildApplicationWhereClause(AccountApplicationPagedRequest request)
         {

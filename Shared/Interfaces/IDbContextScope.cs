@@ -7,8 +7,6 @@ namespace Shared.Interfaces
 
         ValueTask OpenConnectionAsync();
         void CloseConnection();
-        Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> operation);
-        Task ExecuteWithRetryAsync(Func<Task> operation);
         void Commit();
         void Rollback();
     }

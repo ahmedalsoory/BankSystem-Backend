@@ -12,7 +12,6 @@ namespace Shared.Interfaces
         ValueTask<IDbConnection> GetConnectionAsync();
         ValueTask BeginTransactionAsync();
         IDbTransaction? CurrentTransaction { get; }
-        Task<T?> ExecuteTransientAsync<T>(Func<IDbConnection, Task<T>> operation);
         CancellationToken CancellationToken { get; }
     }
 }
