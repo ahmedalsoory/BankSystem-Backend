@@ -33,6 +33,7 @@ The project is structured as a multi-project solution with explicit contracts be
   - [Database Setup & Structure](#database-setup--structure)
 - [Banking Domains](#banking-domains)
 - [Testing](#testing)
+- [Testing Strategy](#testing-strategy)
 - [Load Testing](#load-testing)
 - [Technology Stack](#technology-stack)
 - [Prerequisites](#prerequisites)
@@ -629,7 +630,19 @@ The test project uses:
 - Coverlet collector
 
 The integration-test infrastructure uses `WebApplicationFactory<Program>` and shared test fixtures to exercise the real application composition.
+---
 
+## Testing Strategy
+
+For this repository, I explicitly prioritized **End-to-End Integration Testing** and **Performance Load Testing** over isolated unit tests with heavy mocking.
+
+* **Real-World Confidence:** Integration tests exercise real HTTP pipelines, route mapping, request validation, and database transactions working together end-to-end.
+* **Pragmatic ROI for Solo Development:** During rapid solo development, implementation details and code structures evolve frequently. Heavy unit testing with strict mocks creates tight coupling, requiring constant test rewrites without adding significant value. Integration tests validate overall API behavior and contract fulfillment without slowing down rapid refactoring.
+* **Performance & Concurrency Validation:** Load testing ensures system throughput, query execution, and database concurrency hold up under stress.
+
+> **Team Environment Context:** When working within an engineering team where architectural designs, response contracts, and specifications are explicitly defined by architects, I write unit tests to strictly validate method-level contracts, handle edge cases, and ensure isolated changes do not break shared modules.
+> 
+---
 ## Integration Tests
 
 The repository contains integration tests for areas including:
