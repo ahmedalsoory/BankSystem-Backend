@@ -33,6 +33,7 @@ The project is structured as a multi-project solution with explicit contracts be
   - [Database Setup & Structure](#database-setup--structure)
 - [Banking Domains](#banking-domains)
 - [Testing](#testing)
+- [Testing Strategy](#testing-strategy)
 - [Load Testing](#load-testing)
 - [Technology Stack](#technology-stack)
 - [Prerequisites](#prerequisites)
@@ -500,11 +501,10 @@ The database layer also includes specialized paging implementations and stored-p
 
 To handle heavy database workloads and performance bottlenecks efficiently, the backend implements the following enterprise-level optimizations:
 
-* **Deferred Join & Seek-Based Pagination:** Utilizes CTEs to fetch primary keys first, eliminating expensive `Key Lookups` and maintaining constant response times even during deep pagination.
+* **Deferred Join & Seek-Based Pagination:** Utilizes CTEs to fetch primary keys first, minimizing expensive Key Lookups and stabilizing query performance even during deep pagination.
 * **Cached Count & Metadata Optimization:** Bypasses costly `COUNT(*)` execution plan costs by reusing client-side cached total counts or leveraging ultra-fast metadata partition statistics (`sys.dm_db_partition_stats`) when no custom filters are applied.
 * **Dynamic Parameterized Execution:** Secures all dynamic queries against SQL injection using `sp_executesql` while ensuring optimal query execution plans.
-* **Optimistic Concurrency & Security:** Implements `RowVersion` (`timestamp`) for safe concurrent updates and strict hashing for sensitive data like passwords, card numbers, and CVVs.
-
+* **Optimistic Concurrency & Security:** Implements `RowVersion` (`timestamp`) for safe concurrent updates, secure password hashing (using modern algorithms), and strict masking or tokenization principles for sensitive cardholder data, adhering to financial security best practices.
 ---
 
 ## Concurrency Strategy & Trade-offs
@@ -521,6 +521,19 @@ In financial and banking systems, managing concurrent requests and race conditio
   For non-critical mutations like profile updates, `RowVersion` (`timestamp`) tracking is used. Conflicting updates can safely prompt the client to refresh, causing no financial friction.
 - **Transient Failure Resilience:** 
   Integrated with Polly, the data-access layer automatically handles temporary deadlocks (SQL error `1205`) by safely retrying operations.
+
+- **Atomic Conditional Updates (State-Based Optimistic Concurrency):** To prevent race conditions during high-throughput status updates (e.g., approving or rejecting account applications) without enforcing heavy pessimistic locks, updates execute atomic conditional state transitions directly at the SQL level:
+**Conditional Enforcement:** The `WHERE` clause strictly mandates the valid source state (`Status IN (0, 1)`) and allowed target transition (`@NewStatus IN (2, 3)`).
+  * **Race Condition Mitigation:** If two concurrent requests target the same record, only the first transaction modifies the row; the second fails gracefully with zero rows affected.
+
+sql
+`UPDATE Apps.AccountOpeningDetails
+SET Status = @NewStatus,
+    RejectionReason = @RejectionReason,
+    LastModifiedDate = GETDATE()
+WHERE DetailId = @DetailId
+  AND Status IN (0, 1)  
+  AND @NewStatus IN (2, 3);`
 
 ---
 
@@ -629,7 +642,19 @@ The test project uses:
 - Coverlet collector
 
 The integration-test infrastructure uses `WebApplicationFactory<Program>` and shared test fixtures to exercise the real application composition.
+---
 
+## Testing Strategy
+
+For this repository, I explicitly prioritized **End-to-End Integration Testing** and **Performance Load Testing** over isolated unit tests with heavy mocking.
+
+* **Real-World Confidence:** Integration tests exercise real HTTP pipelines, route mapping, request validation, and database transactions working together end-to-end.
+* **Pragmatic ROI for Solo Development:** During rapid solo development, implementation details and code structures evolve frequently. Heavy unit testing with strict mocks creates tight coupling, requiring constant test rewrites without adding significant value. Integration tests validate overall API behavior and contract fulfillment without slowing down rapid refactoring.
+* **Performance & Concurrency Validation:** Load testing ensures system throughput, query execution, and database concurrency hold up under stress.
+
+> **Team Environment Context:** When working within an engineering team where architectural designs, response contracts, and specifications are explicitly defined by architects, I write unit tests to strictly validate method-level contracts, handle edge cases, and ensure isolated changes do not break shared modules.
+> 
+---
 ## Integration Tests
 
 The repository contains integration tests for areas including:
