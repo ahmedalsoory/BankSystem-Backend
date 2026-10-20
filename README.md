@@ -501,11 +501,10 @@ The database layer also includes specialized paging implementations and stored-p
 
 To handle heavy database workloads and performance bottlenecks efficiently, the backend implements the following enterprise-level optimizations:
 
-* **Deferred Join & Seek-Based Pagination:** Utilizes CTEs to fetch primary keys first, eliminating expensive `Key Lookups` and maintaining constant response times even during deep pagination.
+* **Deferred Join & Seek-Based Pagination:** Utilizes CTEs to fetch primary keys first, minimizing expensive Key Lookups and stabilizing query performance even during deep pagination.
 * **Cached Count & Metadata Optimization:** Bypasses costly `COUNT(*)` execution plan costs by reusing client-side cached total counts or leveraging ultra-fast metadata partition statistics (`sys.dm_db_partition_stats`) when no custom filters are applied.
 * **Dynamic Parameterized Execution:** Secures all dynamic queries against SQL injection using `sp_executesql` while ensuring optimal query execution plans.
-* **Optimistic Concurrency & Security:** Implements `RowVersion` (`timestamp`) for safe concurrent updates and strict hashing for sensitive data like passwords, card numbers, and CVVs.
-
+* **Optimistic Concurrency & Security:** Implements `RowVersion` (`timestamp`) for safe concurrent updates, secure password hashing (using modern algorithms), and strict masking or tokenization principles for sensitive cardholder data, adhering to financial security best practices.
 ---
 
 ## Concurrency Strategy & Trade-offs
