@@ -523,6 +523,19 @@ In financial and banking systems, managing concurrent requests and race conditio
 - **Transient Failure Resilience:** 
   Integrated with Polly, the data-access layer automatically handles temporary deadlocks (SQL error `1205`) by safely retrying operations.
 
+- **Atomic Conditional Updates (State-Based Optimistic Concurrency):** To prevent race conditions during high-throughput status updates (e.g., approving or rejecting account applications) without enforcing heavy pessimistic locks, updates execute atomic conditional state transitions directly at the SQL level:
+**Conditional Enforcement:** The `WHERE` clause strictly mandates the valid source state (`Status IN (0, 1)`) and allowed target transition (`@NewStatus IN (2, 3)`).
+  * **Race Condition Mitigation:** If two concurrent requests target the same record, only the first transaction modifies the row; the second fails gracefully with zero rows affected.
+
+sql
+`UPDATE Apps.AccountOpeningDetails
+SET Status = @NewStatus,
+    RejectionReason = @RejectionReason,
+    LastModifiedDate = GETDATE()
+WHERE DetailId = @DetailId
+  AND Status IN (0, 1)  
+  AND @NewStatus IN (2, 3);`
+
 ---
 
 ## Database Setup & Structure
